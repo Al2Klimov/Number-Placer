@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.1 (2014-01-03)
+/* Al Klimov's Number Placer  1.0.2 (2014-01-04)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -26,11 +26,11 @@ using namespace std;
 
 unsigned long sudokuSize[4], sudokuStrSize[2], sudokuInStrLen;
 bool sudokuX = false, firstLine = true, sudokuFail, sudokuSuccess, sudokuTestReady;
+string sudokuInStr;
 vector<unsigned long> sudokuTestContent, sudokuXPosition[2];
 vector< vector<bool> > sudokuContent;
 vector< vector<unsigned long> > sudokuPosition[3];
 vector< array<unsigned long, 2> > sudokuAddress[3];
-string sudokuInStr;
 
 void invalid_cmd_arg (char* c, int i, string s)
 {
@@ -64,8 +64,9 @@ bool cstr_to_uint (char* c, unsigned long& i)
 	return true;
 }
 
-void uint_division (unsigned long a, unsigned long b, unsigned long* c)
+array<unsigned long, 2> uint_division (unsigned long a, unsigned long b)
 {
+	array<unsigned long, 2> c;
 	c[0] = 0;
 	while (a >= b)
 	{
@@ -73,6 +74,7 @@ void uint_division (unsigned long a, unsigned long b, unsigned long* c)
 		c[0] += 1;
 	}
 	c[1] = a;
+	return c;
 }
 
 unsigned long getInStr()
@@ -141,9 +143,8 @@ void sudokuPrint (bool b = false)
 
 bool sudokuCheck()
 {
-	vector<unsigned long> x (sudokuSize[3]);
 	for (unsigned long i = 0; i < sudokuSize[3]; i++)
-		x[i] = getNumber(i);
+		sudokuTestContent[i] = getNumber(i);
 	unsigned char i;
 	unsigned long j, k, l, m;
 	for (i = 0; i < 3; i++)
@@ -151,9 +152,9 @@ bool sudokuCheck()
 			for (k = 0; k < sudokuSize[2] - 1; k++)
 			{
 				l = sudokuPosition[i][j][k];
-				if (x[l] != 0)
+				if (sudokuTestContent[l] != 0)
 					for (m = k + 1; m < sudokuSize[2]; m++)
-						if (x[l] == x[sudokuPosition[i][j][m]])
+						if (sudokuTestContent[l] == sudokuTestContent[sudokuPosition[i][j][m]])
 							return false;
 			}
 	if (sudokuX)
@@ -161,9 +162,9 @@ bool sudokuCheck()
 			for (k = 0; k < sudokuSize[2] - 1; k++)
 			{
 				l = sudokuXPosition[i][k];
-				if (x[l] != 0)
+				if (sudokuTestContent[l] != 0)
 					for (m = k + 1; m < sudokuSize[2]; m++)
-						if (x[l] == x[sudokuXPosition[i][m]])
+						if (sudokuTestContent[l] == sudokuTestContent[sudokuXPosition[i][m]])
 							return false;
 			}
 	return true;
@@ -252,7 +253,7 @@ void sudokuTest (unsigned long n = 0)
 
 int main (int argc, char** argv)
 {
-	cerr << "Al Klimov's Number Placer  1.0.1" << endl
+	cerr << "Al Klimov's Number Placer  1.0.2" << endl
 		<< "Copyright (C) 2013-2014  Alexander A. Klimov" << endl
 		<< endl;
 	if (argc > 4)
@@ -301,9 +302,9 @@ int main (int argc, char** argv)
 			{
 				if (i == 2)
 				{
-					unsigned long l[2], m[2];
-					uint_division(j, sudokuSize[1], l);
-					uint_division(k, sudokuSize[0], m);
+					array<unsigned long, 2>
+						l = uint_division(j, sudokuSize[1]),
+						m = uint_division(k, sudokuSize[0]);
 					sudokuPosition[2][j][k] =
 						l[0] * sudokuSize[2] * sudokuSize[1] +
 						m[0] * sudokuSize[2] +
