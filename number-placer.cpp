@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.2 (2014-01-04)
+/* Al Klimov's Number Placer  1.0.3 (2014-01-13)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -21,29 +21,29 @@
 #include <string>  // string, getline
 #include <vector>
 #include <array>
+#include <cstdint> // uintmax_t
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
 using namespace std;
 
-unsigned long sudokuSize[4], sudokuStrSize[2], sudokuInStrLen;
+uintmax_t sudokuSize[4], sudokuStrSize[2], sudokuInStrLen;
 bool sudokuX = false, firstLine = true, sudokuFail, sudokuSuccess, sudokuTestReady;
 string sudokuInStr;
-vector<unsigned long> sudokuTestContent, sudokuXPosition[2];
+vector<uintmax_t> sudokuTestContent, sudokuXPosition[2];
 vector< vector<bool> > sudokuContent;
-vector< vector<unsigned long> > sudokuPosition[3];
-vector< array<unsigned long, 2> > sudokuAddress[3];
+vector< vector<uintmax_t> > sudokuPosition[3];
+vector< array<uintmax_t, 2> > sudokuAddress[3];
 
 void invalid_cmd_arg (char* c, int i, string s)
 {
-	cerr << "Error: Invalid command-line argument (" << i << "): '" << c << "'" << endl
-		<< "Must be " << s << "!" << endl;
+	cerr << "Error: Invalid command-line argument (" << i << "): '" << c << "'\nMust be " << s << "!" << endl;
 }
 
-bool cstr_to_uint (char* c, unsigned long& i)
+bool cstr_to_uint (char* c, uintmax_t& i)
 {
-	unsigned long s = strlen(c);
+	uintmax_t s = strlen(c);
 	if (s == 0 || (s > 1 && c[0] == 48))
 		return false;
-	unsigned long j, k, l, m, x = 0;
+	uintmax_t j, k, l, m, x = 0;
 	for (j = 0; j < s; j++)
 	{
 		k = s - 1 - j;
@@ -64,52 +64,39 @@ bool cstr_to_uint (char* c, unsigned long& i)
 	return true;
 }
 
-array<unsigned long, 2> uint_division (unsigned long a, unsigned long b)
-{
-	array<unsigned long, 2> c;
-	c[0] = 0;
-	while (a >= b)
-	{
-		a -= b;
-		c[0] += 1;
-	}
-	c[1] = a;
-	return c;
-}
-
-unsigned long getInStr()
+uintmax_t getInStr()
 {
 	getline(cin, sudokuInStr);
 	return sudokuInStr.length();
 }
 
-void setNumber (unsigned long n, unsigned long x)
+void setNumber (uintmax_t n, uintmax_t x)
 {
-	for (unsigned long i = 0; i < sudokuSize[2]; i++)
+	for (uintmax_t i = 0; i < sudokuSize[2]; i++)
 		sudokuContent[n][i] = (x == 0) ? true : (i == x - 1);
 }
 
-unsigned long sudokuCount (unsigned long n)
+uintmax_t sudokuCount (uintmax_t n)
 {
-	unsigned long x = 0;
-	for (unsigned long i = 0; i < sudokuSize[2]; i++)
+	uintmax_t x = 0;
+	for (uintmax_t i = 0; i < sudokuSize[2]; i++)
 		if (sudokuContent[n][i])
 			x++;
 	return x;
 }
 
-unsigned long sudokuCountAll()
+uintmax_t sudokuCountAll()
 {
-	unsigned long x = 0;
-	for (unsigned long i = 0; i < sudokuSize[3]; i++)
+	uintmax_t x = 0;
+	for (uintmax_t i = 0; i < sudokuSize[3]; i++)
 		if (sudokuCount(i) == 1)
 			x++;
 	return x;
 }
 
-unsigned long getNumber (unsigned long n)
+uintmax_t getNumber (uintmax_t n)
 {
-	unsigned long i = 0;
+	uintmax_t i = 0;
 	if (sudokuCount(n) == 1)
 	{
 		while (! sudokuContent[n][i])
@@ -119,19 +106,19 @@ unsigned long getNumber (unsigned long n)
 	return i;
 }
 
-unsigned long uint_digits (unsigned long n)
+uintmax_t uint_digits (uintmax_t n)
 {
 	if (n == 0)
 		return 1;
-	unsigned long x = 0;
-	for (unsigned long i = 1; i <= n; i *= 10)
+	uintmax_t x = 0;
+	for (uintmax_t i = 1; i <= n; i *= 10)
 		x++;
 	return x;
 }
 
 void sudokuPrint (bool b = false)
 {
-	for (unsigned long i = 0, j, k; i < sudokuSize[3]; i++)
+	for (uintmax_t i = 0, j, k; i < sudokuSize[3]; i++)
 	{
 		j = b ? getNumber(i) : 0;
 		for (k = uint_digits(j); k < sudokuStrSize[0]; k++)
@@ -143,10 +130,10 @@ void sudokuPrint (bool b = false)
 
 bool sudokuCheck()
 {
-	for (unsigned long i = 0; i < sudokuSize[3]; i++)
+	for (uintmax_t i = 0; i < sudokuSize[3]; i++)
 		sudokuTestContent[i] = getNumber(i);
 	unsigned char i;
-	unsigned long j, k, l, m;
+	uintmax_t j, k, l, m;
 	for (i = 0; i < 3; i++)
 		for (j = 0; j < sudokuSize[2]; j++)
 			for (k = 0; k < sudokuSize[2] - 1; k++)
@@ -175,7 +162,7 @@ bool sudokuDone()
 	return sudokuFail || sudokuCountAll() == sudokuSize[3];
 }
 
-bool modNumber (unsigned long n, unsigned long x, bool r = false)
+bool modNumber (uintmax_t n, uintmax_t x, bool r = false)
 {
 	x--;
 	bool b = sudokuContent[n][x];
@@ -184,9 +171,9 @@ bool modNumber (unsigned long n, unsigned long x, bool r = false)
 	return b;
 }
 
-bool sudokuXAddress (unsigned long x, unsigned char a, unsigned long& b)
+bool sudokuXAddress (uintmax_t x, unsigned char a, uintmax_t& b)
 {
-	for (unsigned long i = 0; i < sudokuSize[2]; i++)
+	for (uintmax_t i = 0; i < sudokuSize[2]; i++)
 		if (sudokuXPosition[a][i] == x)
 		{
 			b = i;
@@ -195,17 +182,17 @@ bool sudokuXAddress (unsigned long x, unsigned char a, unsigned long& b)
 	return false;
 }
 
-void sudokuTest (unsigned long n = 0)
+void sudokuTest (uintmax_t n = 0)
 {
 	if (n == 0)
 	{
 		sudokuTestReady = false;
-		for (unsigned long i = 0; i < sudokuSize[3]; i++)
+		for (uintmax_t i = 0; i < sudokuSize[3]; i++)
 			sudokuTestContent[i] = 0;
 	}
 	unsigned char b;
 	bool x;
-	for (unsigned long a = 1, c, d, e, f; a <= sudokuSize[2] && ! sudokuTestReady; a++)
+	for (uintmax_t a = 1, c, d, e, f; a <= sudokuSize[2] && ! sudokuTestReady; a++)
 		if (modNumber(n, a))
 		{
 			x = true;
@@ -242,7 +229,7 @@ void sudokuTest (unsigned long n = 0)
 				else
 				{
 					sudokuTestReady = true;
-					for (unsigned long i = 0; i < sudokuSize[3]; i++)
+					for (uintmax_t i = 0; i < sudokuSize[3]; i++)
 						setNumber(i, sudokuTestContent[i]);
 				}
 			}
@@ -253,9 +240,7 @@ void sudokuTest (unsigned long n = 0)
 
 int main (int argc, char** argv)
 {
-	cerr << "Al Klimov's Number Placer  1.0.2" << endl
-		<< "Copyright (C) 2013-2014  Alexander A. Klimov" << endl
-		<< endl;
+	cerr << "Al Klimov's Number Placer  1.0.3\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
 	if (argc > 4)
 	{
 		cerr << "Error: '" << argv[0] << "' takes at most 3 command-line arguments (" << (argc - 1) << " given)" << endl;
@@ -282,35 +267,27 @@ int main (int argc, char** argv)
 		}
 	}
 	sudokuSize[2] = sudokuSize[0] * sudokuSize[1];
-	cerr << "Sudoku size: " << sudokuSize[0] << "x" << sudokuSize[1] << " (" << sudokuSize[2] << "x" << sudokuSize[2] << ")" << endl
-		<< "X-Sudoku: " << (sudokuX ? "yes" : "no") << endl
-		<< endl
-		<< "Preparing...";
+	cerr << "Sudoku size: " << sudokuSize[0] << "x" << sudokuSize[1] << " (" << sudokuSize[2] << "x" << sudokuSize[2] << ")\nX-Sudoku: " << (sudokuX ? "yes" : "no") << "\n\nPreparing...";
 	sudokuSize[3] = sudokuSize[2] * sudokuSize[2];
 	sudokuContent.resize(sudokuSize[3]);
 	sudokuTestContent.resize(sudokuSize[3]);
-	for (unsigned long i = 0; i < sudokuSize[3]; i++)
+	for (uintmax_t i = 0; i < sudokuSize[3]; i++)
 		sudokuContent[i].resize(sudokuSize[2]);
 	for (unsigned char i = 0; i < 3; i++)
 	{
 		sudokuAddress[i].resize(sudokuSize[3]);
 		sudokuPosition[i].resize(sudokuSize[2]);
-		for (unsigned long j = 0, k; j < sudokuSize[2]; j++)
+		for (uintmax_t j = 0, k; j < sudokuSize[2]; j++)
 		{
 			sudokuPosition[i][j].resize(sudokuSize[2]);
 			for (k = 0; k < sudokuSize[2]; k++)
 			{
 				if (i == 2)
-				{
-					array<unsigned long, 2>
-						l = uint_division(j, sudokuSize[1]),
-						m = uint_division(k, sudokuSize[0]);
 					sudokuPosition[2][j][k] =
-						l[0] * sudokuSize[2] * sudokuSize[1] +
-						m[0] * sudokuSize[2] +
-						l[1] * sudokuSize[0] +
-						m[1];
-				}
+						j / sudokuSize[1] * sudokuSize[2] * sudokuSize[1] +
+						k / sudokuSize[0] * sudokuSize[2] +
+						j % sudokuSize[1] * sudokuSize[0] +
+						k % sudokuSize[0];
 				else
 					sudokuPosition[i][j][k] = (i == 0) ? (j * sudokuSize[2] + k) : (k * sudokuSize[2] + j);
 				sudokuAddress[i][sudokuPosition[i][j][k]][0] = j;
@@ -322,7 +299,7 @@ int main (int argc, char** argv)
 		for (unsigned char i = 0; i < 2; i++)
 		{
 			sudokuXPosition[i].resize(sudokuSize[2]);
-			for (unsigned long j = 0; j < sudokuSize[2]; j++)
+			for (uintmax_t j = 0; j < sudokuSize[2]; j++)
 				sudokuXPosition[i][j] = j * sudokuSize[2] + ((i == 0) ? j : (sudokuSize[2] - 1 - j));
 		}
 	sudokuStrSize[0] = uint_digits(sudokuSize[2]);
@@ -347,13 +324,13 @@ int main (int argc, char** argv)
 		}
 		else if (sudokuInStrLen == sudokuStrSize[1])
 		{
-			for (unsigned long i = 0; i < sudokuStrSize[1]; i++)
+			for (uintmax_t i = 0; i < sudokuStrSize[1]; i++)
 				if (! (48 <= sudokuInStr[i] && sudokuInStr[i] <= 57))
 				{
 					cerr << "Error: Invalid input! Each character must be a decimal number!" << endl;
 					return EXIT_FAILURE;
 				}
-			for (unsigned long i = 0, j, k, l, m; i < sudokuSize[3]; i++)
+			for (uintmax_t i = 0, j, k, l, m; i < sudokuSize[3]; i++)
 			{
 				j = 0;
 				for (k = 0; k < sudokuStrSize[0]; k++)
@@ -374,7 +351,7 @@ int main (int argc, char** argv)
 					return EXIT_FAILURE;
 				}
 			}
-			unsigned long i = sudokuCountAll();
+			uintmax_t i = sudokuCountAll();
 			if (i == 0)
 				sudokuPrint();
 			else if (sudokuCheck())
@@ -386,7 +363,7 @@ int main (int argc, char** argv)
 					sudokuFail = false;
 					sudokuSuccess = true;
 					unsigned char a;
-					unsigned long b, c, d, e, f, g;
+					uintmax_t b, c, d, e, f, g;
 					bool x, y;
 					while (sudokuSuccess && ! sudokuDone())
 					{
@@ -489,8 +466,7 @@ int main (int argc, char** argv)
 				sudokuPrint();
 			if (cin.eof())
 			{
-				cerr << "End of file." << endl
-					<< "Warning: No EOL @ EOF" << endl;
+				cerr << "End of file.\nWarning: No EOL @ EOF" << endl;
 				return EXIT_SUCCESS;
 			}
 			if (firstLine)
