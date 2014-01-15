@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.4 (2014-01-14)
+/* Al Klimov's Number Placer  1.0.5 (2014-01-15)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -34,8 +34,6 @@ vector<vector<uintmax_t>> sudokuPosition[3];
 vector<array<uintmax_t,2>> sudokuAddress[3];
 
 void invalid_cmd_arg(char* c, int i, string s);
-bool cstr_to_uint(char* c, uintmax_t& i);
-uintmax_t getInStr();
 void setNumber(uintmax_t n, uintmax_t x);
 uintmax_t sudokuCount(uintmax_t n);
 uintmax_t sudokuCount();
@@ -50,7 +48,7 @@ void sudokuTest(uintmax_t n);
 
 int main(int argc, char** argv)
 {
-	cerr << "Al Klimov's Number Placer  1.0.4\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
+	cerr << "Al Klimov's Number Placer  1.0.5\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
 	if (argc > 4)
 	{
 		cerr << "Error: '" << argv[0] << "' takes at most 3 command-line arguments (" << (argc - 1) << " given)" << endl;
@@ -66,14 +64,46 @@ int main(int argc, char** argv)
 			return EXIT_FAILURE;
 		}
 	}
-	for (unsigned char j = 0; j < 2; j++)
+	for (signed char i = 0; i < 2; i++)
 	{
-		if (argc - (sudokuX ? 2 : 1) < j + 1)
-			sudokuSize[j] = (j == 0) ? 3 : sudokuSize[0];
-		else if (! cstr_to_uint(argv[j + 1], sudokuSize[j]) || sudokuSize[j] < 2)
+		if (argc - (sudokuX ? 2 : 1) < i + 1)
+			sudokuSize[i] = (i == 0) ? 3 : sudokuSize[0];
+		else
 		{
-			invalid_cmd_arg(argv[j + 1], j + 1, "an integer >= 2");
-			return EXIT_FAILURE;
+			bool b = true;
+			auto s = strlen(argv[i + 1]);
+			if (s == 0 || (s > 1 && argv[i + 1][0] == 48))
+				b = false;
+			else
+			{
+				uintmax_t l, x = 0;
+				for (decltype(s) j = 0, k = s, m; j < s; j++)
+				{
+					k--;
+					if (48 <= argv[i + 1][k] && argv[i + 1][k] <= 57)
+					{
+						l = argv[i + 1][k] - 48;
+						if (l != 0)
+						{
+							for (m = 0; m < j; m++)
+								l *= 10;
+							x += l;
+						}
+					}
+					else
+					{
+						b = false;
+						break;
+					}
+				}
+				if (b)
+					sudokuSize[i] = x;
+			}
+			if (!b || sudokuSize[i] < 2)
+			{
+				invalid_cmd_arg(argv[i + 1], i + 1, "an integer >= 2");
+				return EXIT_FAILURE;
+			}
 		}
 	}
 	sudokuSize[2] = sudokuSize[0] * sudokuSize[1];
@@ -117,7 +147,8 @@ int main(int argc, char** argv)
 	cerr << " done." << endl;
 	while (true)
 	{
-		sudokuInStrLen = getInStr();
+		getline(cin, sudokuInStr);
+		sudokuInStrLen = sudokuInStr.length();
 		if (sudokuInStrLen == 0)
 		{
 			if (cin.eof())
@@ -295,38 +326,6 @@ void invalid_cmd_arg(char* c, int i, string s)
 	cerr << "Error: Invalid command-line argument (" << i << "): '" << c << "'\nMust be " << s << "!" << endl;
 }
 
-bool cstr_to_uint(char* c, uintmax_t& i)
-{
-	uintmax_t s = strlen(c);
-	if (s == 0 || (s > 1 && c[0] == 48))
-		return false;
-	uintmax_t j, k, l, m, x = 0;
-	for (j = 0; j < s; j++)
-	{
-		k = s - 1 - j;
-		if (48 <= c[k] && c[k] <= 57)
-		{
-			l = c[k] - 48;
-			if (l != 0)
-			{
-				for (m = 0; m < j; m++)
-					l *= 10;
-				x += l;
-			}
-		}
-		else
-			return false;
-	}
-	i = x;
-	return true;
-}
-
-uintmax_t getInStr()
-{
-	getline(cin, sudokuInStr);
-	return sudokuInStr.length();
-}
-
 void setNumber(uintmax_t n, uintmax_t x)
 {
 	for (uintmax_t i = 0; i < sudokuSize[2]; i++)
@@ -439,7 +438,7 @@ bool sudokuXAddress(uintmax_t x, unsigned char a, uintmax_t& b)
 	return false;
 }
 
-void sudokuTest(uintmax_t n = 0)
+void sudokuTest(uintmax_t n)
 {
 	if (n == 0)
 	{
