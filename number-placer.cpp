@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.6 (2014-01-16)
+/* Al Klimov's Number Placer  1.0.6.1 (2014-01-16)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -47,7 +47,7 @@ void sudokuTest(uintmax_t n);
 
 int main(int argc, char** argv)
 {
-	cerr << "Al Klimov's Number Placer  1.0.6\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
+	cerr << "Al Klimov's Number Placer  1.0.6.1\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
 	if (argc > 4)
 	{
 		cerr << "Error: '" << argv[0] << "' takes at most 3 command-line arguments (" << (argc - 1) << " given)" << endl;
@@ -423,10 +423,10 @@ bool modNumber(uintmax_t n, uintmax_t x)
 		sudokuFail = true;
 	else if (i == 1)
 	{
-		uintmax_t j = 0;
+		uintmax_t j = 1;
 		while (!getNumberPossibility(n, j))
 			j++;
-		sudokuContent[n] = j + 1;
+		sudokuContent[n] = j;
 	}
 	return b;
 }
