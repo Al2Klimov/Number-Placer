@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.6.1 (2014-01-16)
+/* Al Klimov's Number Placer  1.0.7 (2014-01-17)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -32,22 +32,22 @@ vector<vector<bool>> sudokuPossibilities;
 vector<vector<uintmax_t>> sudokuPosition[3];
 vector<array<uintmax_t,2>> sudokuAddress[3];
 
-void invalid_cmd_arg(char* c, int i, string s);
-void setNumber(uintmax_t n, uintmax_t x);
-uintmax_t sudokuCount(uintmax_t n);
+void invalid_cmd_arg(char*, int, string);
+void setNumber(uintmax_t, uintmax_t);
+uintmax_t sudokuCount(uintmax_t);
 uintmax_t sudokuCount();
-bool getNumberPossibility(uintmax_t n, uintmax_t x);
-uintmax_t uint_digits(uintmax_t n);
-void sudokuPrint(bool b);
+bool getNumberPossibility(uintmax_t, uintmax_t);
+uintmax_t uint_digits(uintmax_t);
+void sudokuPrint(bool);
 bool sudokuTest();
 bool sudokuDone();
-bool modNumber(uintmax_t n, uintmax_t x);
-bool sudokuXAddress(uintmax_t x, unsigned char a, uintmax_t& b);
-void sudokuTest(uintmax_t n);
+bool modNumber(uintmax_t, uintmax_t);
+bool sudokuXAddress(uintmax_t, unsigned char, uintmax_t&);
+void sudokuTest(uintmax_t);
 
 int main(int argc, char** argv)
 {
-	cerr << "Al Klimov's Number Placer  1.0.6.1\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
+	cerr << "Al Klimov's Number Placer  1.0.7\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
 	if (argc > 4)
 	{
 		cerr << "Error: '" << argv[0] << "' takes at most 3 command-line arguments (" << (argc - 1) << " given)" << endl;
@@ -140,7 +140,9 @@ int main(int argc, char** argv)
 		{
 			sudokuXPosition[i].resize(sudokuSize[2]);
 			for (uintmax_t j = 0; j < sudokuSize[2]; j++)
+			{
 				sudokuXPosition[i][j] = j * sudokuSize[2] + ((i == 0) ? j : (sudokuSize[2] - 1 - j));
+			}
 		}
 	sudokuStrSize[0] = uint_digits(sudokuSize[2]);
 	sudokuStrSize[1] = sudokuStrSize[0] * sudokuSize[3];
@@ -208,29 +210,25 @@ int main(int argc, char** argv)
 					unsigned char a;
 					uintmax_t b, c, d, e, f, g;
 					bool x, y;
-					while (sudokuSuccess && ! sudokuDone())
+					while (sudokuSuccess && !sudokuDone())
 					{
 						sudokuSuccess = false;
-						for (a = 0; a < 3             && ! sudokuDone(); a++)
-						for (b = 0; b < sudokuSize[2] && ! sudokuDone(); b++)
-						for (c = 0; c < sudokuSize[2] && ! sudokuDone(); c++)
+						for (a = 0; a < 3             && !sudokuDone(); a++)
+						for (b = 0; b < sudokuSize[2] && !sudokuDone(); b++)
+						for (c = 0; c < sudokuSize[2] && !sudokuDone(); c++)
 						{
 							d = sudokuPosition[a][b][c];
 							if (sudokuCount(d) > 1)
 							{
-								for (e = 0; e < sudokuSize[2] && ! sudokuDone(); e++)
+								for (e = 0; e < sudokuSize[2] && !sudokuDone(); e++)
 									if (e != c)
 									{
 										f = sudokuPosition[a][b][e];
 										if (sudokuCount(f) == 1)
 											if (modNumber(d, sudokuContent[f]))
-											{
 												sudokuSuccess = true;
-												if (sudokuCount(d) == 0)
-													sudokuFail = true;
-											}
 									}
-								if (! sudokuDone())
+								if (!sudokuDone())
 								{
 									x = true;
 									for (e = 1; e <= sudokuSize[2] && x; e++)
@@ -254,26 +252,22 @@ int main(int argc, char** argv)
 								}
 							}
 						}
-						if (sudokuX && ! sudokuDone())
-							for (a = 0; a < 2             && ! sudokuDone(); a++)
-							for (c = 0; c < sudokuSize[2] && ! sudokuDone(); c++)
+						if (sudokuX && !sudokuDone())
+							for (a = 0; a < 2             && !sudokuDone(); a++)
+							for (c = 0; c < sudokuSize[2] && !sudokuDone(); c++)
 							{
 								d = sudokuXPosition[a][c];
 								if (sudokuCount(d) > 1)
 								{
-									for (e = 0; e < sudokuSize[2] && ! sudokuDone(); e++)
+									for (e = 0; e < sudokuSize[2] && !sudokuDone(); e++)
 										if (e != c)
 										{
 											f = sudokuXPosition[a][e];
 											if (sudokuCount(f) == 1)
 												if (modNumber(d, sudokuContent[f]))
-												{
 													sudokuSuccess = true;
-													if (sudokuCount(d) == 0)
-														sudokuFail = true;
-												}
 										}
-									if (! sudokuDone())
+									if (!sudokuDone())
 									{
 										x = true;
 										for (e = 1; e <= sudokuSize[2] && x; e++)
@@ -298,11 +292,11 @@ int main(int argc, char** argv)
 								}
 							}
 					}
-					if (! sudokuDone())
+					if (!sudokuDone())
 						sudokuTest(0);
-					if (! sudokuFail)
-						sudokuFail = ! sudokuTest();
-					sudokuPrint(! sudokuFail);
+					if (!sudokuFail)
+						sudokuFail = !sudokuTest();
+					sudokuPrint(!sudokuFail);
 				}
 			}
 			else
