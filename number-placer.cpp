@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.8 (2014-01-18)
+/* Al Klimov's Number Placer  1.0.9 (2014-01-25)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -47,7 +47,7 @@ uintmax_t uint_digits(uintmax_t);
 
 int main(int argc, char** argv)
 {
-	cerr << "Al Klimov's Number Placer  1.0.8\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
+	cerr << "Al Klimov's Number Placer  1.0.9\nCopyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
 	if (argc > 4)
 	{
 		cerr << "Error: '" << argv[0] << "' takes at most 3 command-line arguments (" << (argc - 1) << " given)" << endl;
@@ -147,7 +147,7 @@ int main(int argc, char** argv)
 	bool firstLine = true, sudokuSuccess;
 	string sudokuInStr;
 	cerr << " done." << endl;
-	while (true)
+	for (;;)
 	{
 		getline(cin, sudokuInStr);
 		auto sudokuInStrLen = sudokuInStr.length();
