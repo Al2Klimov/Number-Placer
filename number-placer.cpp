@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.10 (2014-02-15)
+/* Al Klimov's Number Placer  1.0.11 (2014-02-18)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -52,7 +52,7 @@ uintmax_t uint_digits(uintmax_t);
 
 int main(int argc, char** argv)
 {
-    cerr << "Al Klimov's Number Placer  1.0.10\n"
+    cerr << "Al Klimov's Number Placer  1.0.11\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     if (argc > 4)
     {
@@ -106,7 +106,10 @@ int main(int argc, char** argv)
             }
             if (!b || sudokuSize[i] < 2)
             {
-                invalid_cmd_arg(argv[i+1], i + 1, (!sudokuX && argc - 1 == i + 1) ? "an integer >= 2 or 'X' or 'x'" : "an integer >= 2");
+                invalid_cmd_arg(argv[i+1], i + 1,
+                    (!sudokuX && argc - 1 == i + 1)
+                    ? "an integer >= 2 or 'X' or 'x'"
+                    : "an integer >= 2");
                 return EXIT_FAILURE;
             }
         }
@@ -365,13 +368,17 @@ uintmax_t uint_digits(uintmax_t n)
 
 void sudokuPrint(bool b)
 {
-    for (uintmax_t i = 0, j; i < sudokuSize[3]; i++)
-    {
-        j = b ? sudokuContent[i] : 0;
-        for (auto k = uint_digits(j); k < sudokuStrSize[0]; k++)
+    if (b)
+        for (uintmax_t i = 0; i < sudokuSize[3]; i++)
+        {
+            for (auto k = uint_digits(sudokuContent[i]); k < sudokuStrSize[0]; k++)
+                cout << 0;
+            cout << sudokuContent[i];
+        }
+    else
+        for (uintmax_t i = 0; i < sudokuSize[3]   ; i++)
+        for (uintmax_t j = 0; j < sudokuStrSize[0]; j++)
             cout << 0;
-        cout << j;
-    }
     cout << endl;
 }
 
