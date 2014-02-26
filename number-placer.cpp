@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.12 (2014-02-20)
+/* Al Klimov's Number Placer  1.0.13 (2014-02-26)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -54,7 +54,7 @@ uintmax_t uint_digits(uintmax_t);
 
 int main(int argc, char** argv)
 {
-    cerr << "Al Klimov's Number Placer  1.0.12\n"
+    cerr << "Al Klimov's Number Placer  1.0.13\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     _argv = argv;
     if (argc > 4)
@@ -119,44 +119,60 @@ int main(int argc, char** argv)
             "X-Sudoku: " << (sudokuX ? "yes" : "no") << "\n"
             "\n"
             "Preparing...";
-    sudokuPossibilities.resize(sudokuSize[3] = sudokuSize[2] * sudokuSize[2]);
-    sudokuContent.resize(sudokuSize[3]);
-    sudokuTestContent.resize(sudokuSize[3]);
-    for (uintmax_t i = 0; i < sudokuSize[3]; i++)
-        sudokuPossibilities[i].resize(sudokuSize[2]);
-    for (unsigned char i = 0; i < 3; i++)
+    try
     {
-        sudokuAddress[i].resize(sudokuSize[3]);
-        sudokuPosition[i].resize(sudokuSize[2]);
-        for (uintmax_t j = 0, k; j < sudokuSize[2]; j++)
+        sudokuPossibilities.resize(sudokuSize[3] = sudokuSize[2] * sudokuSize[2]);
+        sudokuContent.resize(sudokuSize[3]);
+        sudokuTestContent.resize(sudokuSize[3]);
+        for (uintmax_t i = 0; i < sudokuSize[3]; i++)
+            sudokuPossibilities[i].resize(sudokuSize[2]);
+        for (unsigned char i = 0; i < 3; i++)
         {
-            sudokuPosition[i][j].resize(sudokuSize[2]);
-            for (k = 0; k < sudokuSize[2]; k++)
+            sudokuAddress[i].resize(sudokuSize[3]);
+            sudokuPosition[i].resize(sudokuSize[2]);
+            for (uintmax_t j = 0, k; j < sudokuSize[2]; j++)
             {
-                if (i == 2)
-                    sudokuPosition[2][j][k] =
-                        j / sudokuSize[1] * sudokuSize[2] * sudokuSize[1] +
-                        k / sudokuSize[0] * sudokuSize[2] +
-                        j % sudokuSize[1] * sudokuSize[0] +
-                        k % sudokuSize[0];
-                else
-                    sudokuPosition[i][j][k] = (i == 0) ? (j * sudokuSize[2] + k) : (k * sudokuSize[2] + j);
-                sudokuAddress[i][sudokuPosition[i][j][k]][0] = j;
-                sudokuAddress[i][sudokuPosition[i][j][k]][1] = k;
+                sudokuPosition[i][j].resize(sudokuSize[2]);
+                for (k = 0; k < sudokuSize[2]; k++)
+                {
+                    if (i == 2)
+                        sudokuPosition[2][j][k] =
+                            j / sudokuSize[1] * sudokuSize[2] * sudokuSize[1] +
+                            k / sudokuSize[0] * sudokuSize[2] +
+                            j % sudokuSize[1] * sudokuSize[0] +
+                            k % sudokuSize[0];
+                    else
+                        sudokuPosition[i][j][k] = (i == 0) ? (j * sudokuSize[2] + k) : (k * sudokuSize[2] + j);
+                    sudokuAddress[i][ sudokuPosition[i][j][k] ][0] = j;
+                    sudokuAddress[i][ sudokuPosition[i][j][k] ][1] = k;
+                }
             }
         }
+        if (sudokuX)
+            for (unsigned char i = 0; i < 2; i++)
+            {
+                sudokuXPosition[i].resize(sudokuSize[2]);
+                for (uintmax_t j = 0; j < sudokuSize[2]; j++)
+                    sudokuXPosition[i][j] = j * sudokuSize[2] + ((i == 0) ? j : (sudokuSize[2] - 1 - j));
+            }
+        sudokuStrSize[1] = (sudokuStrSize[0] = uint_digits(sudokuSize[2])) * sudokuSize[3];
     }
-    if (sudokuX)
-        for (unsigned char i = 0; i < 2; i++)
-        {
-            sudokuXPosition[i].resize(sudokuSize[2]);
-            for (uintmax_t j = 0; j < sudokuSize[2]; j++)
-                sudokuXPosition[i][j] = j * sudokuSize[2] + ((i == 0) ? j : (sudokuSize[2] - 1 - j));
-        }
-    sudokuStrSize[1] = (sudokuStrSize[0] = uint_digits(sudokuSize[2])) * sudokuSize[3];
-    bool firstLine = true, sudokuSuccess;
-    string sudokuInStr;
+    catch (const bad_alloc& e)
+    {
+        (void)e;
+        cerr << "\nError: Out of memory!" << endl;
+        return EXIT_FAILURE;
+    }
+    catch (const length_error& e)
+    {
+        (void)e;
+        cerr << "\nError: Too large Sudoku!" << endl;
+        return EXIT_FAILURE;
+    }
     cerr << " done." << endl;
+    bool firstLine = true,
+         sudokuSuccess;
+    string sudokuInStr;
     for (;;)
     {
         getline(cin, sudokuInStr);
