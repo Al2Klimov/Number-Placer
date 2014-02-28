@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.14 (2014-02-27)
+/* Al Klimov's Number Placer  1.0.15 (2014-02-28)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -55,7 +55,7 @@ uint_sudoku_t uint_digits(uint_sudoku_t);
 
 int main(int argc, char** argv)
 {
-    cerr << "Al Klimov's Number Placer  1.0.14\n"
+    cerr << "Al Klimov's Number Placer  1.0.15\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     _argv = argv;
     if (argc > 4)
@@ -122,9 +122,13 @@ int main(int argc, char** argv)
             "Preparing...";
     try
     {
-        sudokuPossibilities.resize(sudokuSize[3] = sudokuSize[2] * sudokuSize[2]);
-        sudokuContent.resize(sudokuSize[3]);
-        sudokuTestContent.resize(sudokuSize[3]);
+        sudokuSize[3] = sudokuSize[2] * sudokuSize[2];
+        if (!(sudokuSize[3] / sudokuSize[2] == sudokuSize[2] &&
+              sudokuSize[2] / sudokuSize[1] == sudokuSize[0]))
+            throw length_error("");
+        sudokuPossibilities.resize(sudokuSize[3]);
+        sudokuContent      .resize(sudokuSize[3]);
+        sudokuTestContent  .resize(sudokuSize[3]);
         for (uint_sudoku_t i = 0; i < sudokuSize[3]; i++)
             sudokuPossibilities[i].resize(sudokuSize[2]);
         for (unsigned char i = 0; i < 3; i++)
