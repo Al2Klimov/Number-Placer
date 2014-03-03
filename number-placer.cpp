@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.16 (2014-03-01)
+/* Al Klimov's Number Placer  1.0.17 (2014-03-03)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -52,7 +52,7 @@ uint_sudoku_t sudokuCount();
 uint_sudoku_t uint_digits(uint_sudoku_t);
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.16\n"
+    cerr << "Al Klimov's Number Placer  1.0.17\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; i++)
@@ -154,7 +154,117 @@ int main(int argc, char** _argv) {
     for (;;) {
         getline(cin, sudokuInStr);
         auto sudokuInStrLen = sudokuInStr.length();
-        if (!sudokuInStrLen) {
+        if (sudokuInStrLen) {
+            if (sudokuInStrLen == sudokuStrSize[1]) {
+                for (uint_sudoku_t i = 0; i < sudokuStrSize[1]; i++)
+                    if (!(48 <= sudokuInStr[i] && sudokuInStr[i] <= 57)) {
+                        cerr << "Error: Invalid input!\n"
+                                "Each character must be a decimal number!" << endl;
+                        return EXIT_FAILURE;
+                    }
+                for (uint_sudoku_t i = 0, j; i < sudokuSize[3]; i++) {
+                    auto s = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
+                    try {
+                        if ((j = stoull(s)) > sudokuSize[2]) {
+                            cerr << "Error: Invalid input!\n"
+                                    "Number " << j << " out of range (0-" << sudokuSize[2] << ")!" << endl;
+                            return EXIT_FAILURE;
+                        } else setNumber(i, j);
+                    } catch (const out_of_range& e) {
+                        (void)e;
+                        cerr << "Error: Invalid input: '" << s << "'\n"
+                                "Integer out of range!" << endl;
+                        return EXIT_FAILURE;
+                    }
+                }
+                auto i = sudokuCount();
+                if (i) {
+                    if (sudokuCheck()) {
+                        if (i == sudokuSize[3])
+                            sudokuPrint(true);
+                        else {
+                            sudokuFail = false;
+                            sudokuSuccess = true;
+                            unsigned char a;
+                            uint_sudoku_t b, c, d, e, f;
+                            bool x, y;
+                            while (sudokuSuccess && !sudokuDone()) {
+                                sudokuSuccess = false;
+                                for (a = 0; a <             3 && !sudokuDone(); a++)
+                                for (b = 0; b < sudokuSize[2] && !sudokuDone(); b++)
+                                for (c = 0; c < sudokuSize[2] && !sudokuDone(); c++) {
+                                    if (sudokuCount(d = sudokuPosition[a][b][c]) > 1) {
+                                        for (e = 0; e < sudokuSize[2] && !sudokuDone(); e++)
+                                            if (e != c) {
+                                                if (sudokuCount(f = sudokuPosition[a][b][e]) == 1)
+                                                    if (modNumber(d, sudokuContent[f]))
+                                                        sudokuSuccess = true;
+                                            }
+                                        if (!sudokuDone()) {
+                                            x = true;
+                                            for (e = 1; e <= sudokuSize[2] && x; e++)
+                                                if (getNumberPossibility(d, e)) {
+                                                    y = true;
+                                                    for (f = 0; f < sudokuSize[2] && x && y; f++)
+                                                        if (f != c && getNumberPossibility(sudokuPosition[a][b][f], e))
+                                                            y = false;
+                                                    if (y) {
+                                                        x = false;
+                                                        setNumber(d, e);
+                                                        sudokuSuccess = true;
+                                                    }
+                                                }
+                                        }
+                                    }
+                                }
+                                if (sudokuX && !sudokuDone())
+                                    for (a = 0; a <             2 && !sudokuDone(); a++)
+                                    for (c = 0; c < sudokuSize[2] && !sudokuDone(); c++) {
+                                        if (sudokuCount(d = sudokuXPosition[a][c]) > 1) {
+                                            for (e = 0; e < sudokuSize[2] && !sudokuDone(); e++)
+                                                if (e != c)
+                                                if (sudokuCount(f = sudokuXPosition[a][e]) == 1)
+                                                if (modNumber(d, sudokuContent[f]))
+                                                    sudokuSuccess = true;
+                                            if (!sudokuDone()) {
+                                                x = true;
+                                                for (e = 1; e <= sudokuSize[2] && x; e++)
+                                                    if (getNumberPossibility(d, e)) {
+                                                        y = true;
+                                                        for (f = 0; f < sudokuSize[2] && x && y; f++)
+                                                            if (f != c && getNumberPossibility(sudokuXPosition[a][f], e))
+                                                                y = false;
+                                                        if (y) {
+                                                            x = false;
+                                                            setNumber(d, e);
+                                                            sudokuSuccess = true;
+                                                        }
+                                                    }
+                                            }
+                                        }
+                                    }
+                            }
+                            if (!sudokuDone())
+                                sudokuTest();
+                            if (!sudokuFail)
+                                sudokuFail = !sudokuCheck();
+                            sudokuPrint(!sudokuFail);
+                        }
+                    } else sudokuPrint(false);
+                } else sudokuPrint(false);
+                if (cin.eof()) {
+                    cerr << "End of file.\n"
+                            "Warning: No EOL @ EOF" << endl;
+                    return EXIT_SUCCESS;
+                }
+                if (firstLine)
+                    firstLine = false;
+            } else {
+                cerr << "Error: Invalid input!\n"
+                        "Each line must be " << sudokuStrSize[1] << " characters long!" << endl;
+                return EXIT_FAILURE;
+            }
+        } else {
             if (cin.eof()) {
                 cerr << (firstLine ? "EOF @ first line -- nothing to do." : "End of file.") << endl;
                 return EXIT_SUCCESS;
@@ -163,115 +273,6 @@ int main(int argc, char** _argv) {
                 if (firstLine)
                     firstLine = false;
             }
-        } else if (sudokuInStrLen == sudokuStrSize[1]) {
-            for (uint_sudoku_t i = 0; i < sudokuStrSize[1]; i++)
-                if (!(48 <= sudokuInStr[i] && sudokuInStr[i] <= 57)) {
-                    cerr << "Error: Invalid input!\n"
-                            "Each character must be a decimal number!" << endl;
-                    return EXIT_FAILURE;
-                }
-            for (uint_sudoku_t i = 0, j; i < sudokuSize[3]; i++) {
-                auto s = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
-                try {
-                    if ((j = stoull(s)) > sudokuSize[2]) {
-                        cerr << "Error: Invalid input!\n"
-                                "Number " << j << " out of range (0-" << sudokuSize[2] << ")!" << endl;
-                        return EXIT_FAILURE;
-                    } else setNumber(i, j);
-                } catch (const out_of_range& e) {
-                    (void)e;
-                    cerr << "Error: Invalid input: '" << s << "'\n"
-                            "Integer out of range!" << endl;
-                    return EXIT_FAILURE;
-                }
-            }
-            auto i = sudokuCount();
-            if (!i)
-                sudokuPrint(false);
-            else if (sudokuCheck()) {
-                if (i == sudokuSize[3])
-                    sudokuPrint(true);
-                else {
-                    sudokuFail = false;
-                    sudokuSuccess = true;
-                    unsigned char a;
-                    uint_sudoku_t b, c, d, e, f;
-                    bool x, y;
-                    while (sudokuSuccess && !sudokuDone()) {
-                        sudokuSuccess = false;
-                        for (a = 0; a <             3 && !sudokuDone(); a++)
-                        for (b = 0; b < sudokuSize[2] && !sudokuDone(); b++)
-                        for (c = 0; c < sudokuSize[2] && !sudokuDone(); c++) {
-                            if (sudokuCount(d = sudokuPosition[a][b][c]) > 1) {
-                                for (e = 0; e < sudokuSize[2] && !sudokuDone(); e++)
-                                    if (e != c) {
-                                        if (sudokuCount(f = sudokuPosition[a][b][e]) == 1)
-                                            if (modNumber(d, sudokuContent[f]))
-                                                sudokuSuccess = true;
-                                    }
-                                if (!sudokuDone()) {
-                                    x = true;
-                                    for (e = 1; e <= sudokuSize[2] && x; e++)
-                                        if (getNumberPossibility(d, e)) {
-                                            y = true;
-                                            for (f = 0; f < sudokuSize[2] && x && y; f++)
-                                                if (f != c && getNumberPossibility(sudokuPosition[a][b][f], e))
-                                                    y = false;
-                                            if (y) {
-                                                x = false;
-                                                setNumber(d, e);
-                                                sudokuSuccess = true;
-                                            }
-                                        }
-                                }
-                            }
-                        }
-                        if (sudokuX && !sudokuDone())
-                            for (a = 0; a <             2 && !sudokuDone(); a++)
-                            for (c = 0; c < sudokuSize[2] && !sudokuDone(); c++) {
-                                if (sudokuCount(d = sudokuXPosition[a][c]) > 1) {
-                                    for (e = 0; e < sudokuSize[2] && !sudokuDone(); e++)
-                                        if (e != c) {
-                                            if (sudokuCount(f = sudokuXPosition[a][e]) == 1)
-                                                if (modNumber(d, sudokuContent[f]))
-                                                    sudokuSuccess = true;
-                                        }
-                                    if (!sudokuDone()) {
-                                        x = true;
-                                        for (e = 1; e <= sudokuSize[2] && x; e++)
-                                            if (getNumberPossibility(d, e)) {
-                                                y = true;
-                                                for (f = 0; f < sudokuSize[2] && x && y; f++)
-                                                    if (f != c && getNumberPossibility(sudokuXPosition[a][f], e))
-                                                        y = false;
-                                                if (y) {
-                                                    x = false;
-                                                    setNumber(d, e);
-                                                    sudokuSuccess = true;
-                                                }
-                                            }
-                                    }
-                                }
-                            }
-                    }
-                    if (!sudokuDone())
-                        sudokuTest();
-                    if (!sudokuFail)
-                        sudokuFail = !sudokuCheck();
-                    sudokuPrint(!sudokuFail);
-                }
-            } else sudokuPrint(false);
-            if (cin.eof()) {
-                cerr << "End of file.\n"
-                        "Warning: No EOL @ EOF" << endl;
-                return EXIT_SUCCESS;
-            }
-            if (firstLine)
-                firstLine = false;
-        } else {
-            cerr << "Error: Invalid input!\n"
-                    "Each line must be " << sudokuStrSize[1] << " characters long!" << endl;
-            return EXIT_FAILURE;
         }
     }
 }
@@ -308,11 +309,11 @@ bool getNumberPossibility(uint_sudoku_t n, uint_sudoku_t x) {
 }
 
 uint_sudoku_t uint_digits(uint_sudoku_t n) {
-    if (!n)
-        return 1;
     uint_sudoku_t x = 0;
-    for (uint_sudoku_t i = 1; i <= n; i *= 10)
+    do {
+        n /= 10;
         x++;
+    } while (n);
     return x;
 }
 
@@ -323,8 +324,7 @@ void sudokuPrint(bool b) {
                 cout << 0;
             cout << sudokuContent[i];
         }
-    else for (uint_sudoku_t i = 0; i < sudokuSize[3]   ; i++)
-         for (uint_sudoku_t j = 0; j < sudokuStrSize[0]; j++)
+    else for (uint_sudoku_t i = 0; i < sudokuStrSize[1]; i++)
              cout << 0;
     cout << endl;
 }
@@ -360,14 +360,14 @@ bool modNumber(uint_sudoku_t n, uint_sudoku_t x) {
     if (b)
         sudokuPossibilities[n][x] = false;
     auto i = sudokuCount(n);
-    if (!i)
-        sudokuFail = true;
-    else if (i == 1) {
-        uint_sudoku_t j = 1;
-        while (!getNumberPossibility(n, j))
-            j++;
-        sudokuContent[n] = j;
-    }
+    if (i) {
+        if (i == 1) {
+            uint_sudoku_t j = 1;
+            while (!getNumberPossibility(n, j))
+                j++;
+            sudokuContent[n] = j;
+        }
+    } else sudokuFail = true;
     return b;
 }
 
