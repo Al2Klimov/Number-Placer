@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.17.2 (2014-03-03)
+/* Al Klimov's Number Placer  1.0.17.3 (2014-03-06)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Powered by C++11
  *
@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <stdexcept>
+#include <new>
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
 using namespace std;
 using uint_sudoku_t = unsigned long long;
@@ -52,7 +54,7 @@ uint_sudoku_t sudokuCount();
 uint_sudoku_t uint_digits(uint_sudoku_t);
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.17.2\n"
+    cerr << "Al Klimov's Number Placer  1.0.17.3\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; i++)
