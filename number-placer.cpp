@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.19 (2014-04-10)
+/* Al Klimov's Number Placer  1.0.20 (2014-04-11)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Written in C++11
  *
@@ -64,7 +64,7 @@ class sudoku_interrupt: public exception
 {} sudokuInterrupt;
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.19\n"
+    cerr << "Al Klimov's Number Placer  1.0.20\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; i++)
@@ -196,12 +196,10 @@ int main(int argc, char** _argv) {
                             sudokuPrint(true);
                         else {
                             sudokuFail = false;
+                            unsigned char a;
+                            uint_sudoku_t b, c, d, e, f;
                             try {
-                                sudokuSuccess = true;
-                                unsigned char a;
-                                uint_sudoku_t b, c, d, e, f;
-                                bool x, y;
-                                while (sudokuSuccess) {
+                                do {
                                     sudokuSuccess = false;
                                     for (a = 0; a <             3; a++)
                                     for (b = 0; b < sudokuSize[2]; b++)
@@ -212,20 +210,17 @@ int main(int argc, char** _argv) {
                                                 if (sudokuCount(f = sudokuPosition[a][b][e]) == 1)
                                                 if (modNumber(d, sudokuContent[f]))
                                                     sudokuSuccess = true;
-                                            x = true;
-                                            for (e = 1; e <= sudokuSize[2] && x; e++)
+                                            for (e = 1; e <= sudokuSize[2]; e++)
                                                 if (getNumberPossibility(d, e)) {
-                                                    y = true;
-                                                    for (f = 0; f < sudokuSize[2] && x && y; f++)
+                                                    for (f = 0; f < sudokuSize[2]; f++)
                                                         if (f != c && getNumberPossibility(sudokuPosition[a][b][f], e))
-                                                            y = false;
-                                                    if (y) {
-                                                        x = false;
-                                                        setNumber(d, e);
-                                                        if (sudokuDone())
-                                                            throw sudokuInterrupt;
-                                                        sudokuSuccess = true;
-                                                    }
+                                                            goto ContinueParentLoop1;
+                                                    setNumber(d, e);
+                                                    if (sudokuDone())
+                                                        throw sudokuInterrupt;
+                                                    sudokuSuccess = true;
+                                                    break;
+                                                    ContinueParentLoop1:;
                                                 }
                                         }
                                     }
@@ -238,24 +233,21 @@ int main(int argc, char** _argv) {
                                                     if (sudokuCount(f = sudokuXPosition[a][e]) == 1)
                                                     if (modNumber(d, sudokuContent[f]))
                                                         sudokuSuccess = true;
-                                                x = true;
-                                                for (e = 1; e <= sudokuSize[2] && x; e++)
+                                                for (e = 1; e <= sudokuSize[2]; e++)
                                                     if (getNumberPossibility(d, e)) {
-                                                        y = true;
-                                                        for (f = 0; f < sudokuSize[2] && x && y; f++)
+                                                        for (f = 0; f < sudokuSize[2]; f++)
                                                             if (f != c && getNumberPossibility(sudokuXPosition[a][f], e))
-                                                                y = false;
-                                                        if (y) {
-                                                            x = false;
-                                                            setNumber(d, e);
-                                                            if (sudokuDone())
-                                                                throw sudokuInterrupt;
-                                                            sudokuSuccess = true;
-                                                        }
+                                                                goto ContinueParentLoop2;
+                                                        setNumber(d, e);
+                                                        if (sudokuDone())
+                                                            throw sudokuInterrupt;
+                                                        sudokuSuccess = true;
+                                                        break;
+                                                        ContinueParentLoop2:;
                                                     }
                                             }
                                         }
-                                }
+                                } while (sudokuSuccess);
                                 sudokuTest();
                             } catch (const sudoku_interrupt& e) {
                                 (void)e;
