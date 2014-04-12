@@ -339,17 +339,17 @@ bool sudokuCheck() {
     for (i = 0; i <                 3; i++)
     for (j = 0; j < sudokuSize[2]    ; j++)
     for (k = 0; k < sudokuSize[2] - 1; k++) {
-        if (sudokuContent[l = sudokuPosition[i][j][k]])
+        if (sudokuContent[ l = sudokuPosition[i][j][k] ])
             for (m = k + 1; m < sudokuSize[2]; m++)
-                if (sudokuContent[l] == sudokuContent[sudokuPosition[i][j][m]])
+                if (sudokuContent[l] == sudokuContent[ sudokuPosition[i][j][m] ])
                     return false;
     }
     if (sudokuX)
         for (i = 0; i <                 2; i++)
         for (k = 0; k < sudokuSize[2] - 1; k++) {
-            if (sudokuContent[l = sudokuXPosition[i][k]])
+            if (sudokuContent[ l = sudokuXPosition[i][k] ])
                 for (m = k + 1; m < sudokuSize[2]; m++)
-                    if (sudokuContent[l] == sudokuContent[sudokuXPosition[i][m]])
+                    if (sudokuContent[l] == sudokuContent[ sudokuXPosition[i][m] ])
                         return false;
         }
     return true;
@@ -416,7 +416,7 @@ bool sudokuTest(uint_sudoku_t n) {
     for (a = 0; a <             3; a++)
     for (b = 0; b < sudokuSize[2]; b++)
         if (b != sudokuAddress[a][n][1]) {
-            c = sudokuPosition[a][sudokuAddress[a][n][0]][b];
+            c = sudokuPosition[a][ sudokuAddress[a][n][0] ][b];
             if (sudokuTestContent[c] &&
                 sudokuTestContent[c] == sudokuTestContent[n])
                 return false;
