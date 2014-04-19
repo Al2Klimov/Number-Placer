@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.21 (2014-04-18)
+/* Al Klimov's Number Placer  1.0.22 (2014-04-19)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Written in C++11
  *
@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <map>
 #include <exception>
 #include <stdexcept>
 #include <new>
@@ -45,6 +46,10 @@ vector<array<uint_sudoku_t,2>>
     sudokuAddress[3];
 vector<string>
     argv;
+map<uint_sudoku_t,uint_sudoku_t>
+    sudokuXAddressMap[2];
+vector<bool>
+    sudokuXAddressValid[2];
 
 inline void invalid_cmd_arg(int, string);
 inline bool getNumberPossibility(uint_sudoku_t, uint_sudoku_t);
@@ -64,7 +69,7 @@ class sudoku_interrupt: public exception
 {} sudokuInterrupt;
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.21\n"
+    cerr << "Al Klimov's Number Placer  1.0.22\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; i++)
@@ -146,9 +151,16 @@ int main(int argc, char** _argv) {
         }
         if (sudokuX)
             for (unsigned char i = 0u; i < 2u; i++) {
-                sudokuXPosition[i].resize(sudokuSize[2]);
-                for (uint_sudoku_t j = 0u; j < sudokuSize[2]; j++)
-                    sudokuXPosition[i][j] = j * sudokuSize[2] + (i ? (sudokuSize[2] - 1u - j) : j);
+                sudokuXPosition    [i].resize(sudokuSize[2]);
+                sudokuXAddressValid[i].resize(sudokuSize[3]);
+                for (uint_sudoku_t j = 0u; j < sudokuSize[3]; j++)
+                    sudokuXAddressValid[i][j] = false;
+                for (uint_sudoku_t j = 0u; j < sudokuSize[2]; j++) {
+                    sudokuXAddressValid[i][
+                        sudokuXPosition[i][j] = j * sudokuSize[2] + (i ? (sudokuSize[2] - 1u - j) : j)
+                    ] = true;
+                    sudokuXAddressMap[i][ sudokuXPosition[i][j] ] = j;
+                }
             }
     } catch (const bad_alloc& e) {
         (void)e;
@@ -379,12 +391,10 @@ bool modNumber(uint_sudoku_t n, uint_sudoku_t x) {
 }
 
 bool sudokuXAddress(uint_sudoku_t x, unsigned char a, uint_sudoku_t& b) {
-    for (uint_sudoku_t i = 0u; i < sudokuSize[2]; i++)
-        if (sudokuXPosition[a][i] == x) {
-            b = i;
-            return true;
-        }
-    return false;
+    if (!sudokuXAddressValid[a][x])
+        return false;
+    b = sudokuXAddressMap[a][x];
+    return true;
 }
 
 void sudokuTest() {
