@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.22 (2014-04-19)
+/* Al Klimov's Number Placer  1.0.23 (2014-05-01)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Written in C++11
  *
@@ -69,7 +69,7 @@ class sudoku_interrupt: public exception
 {} sudokuInterrupt;
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.22\n"
+    cerr << "Al Klimov's Number Placer  1.0.23\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; i++)
@@ -217,10 +217,10 @@ int main(int argc, char** _argv) {
                                     for (a = 0u; a <            3u; a++)
                                     for (b = 0u; b < sudokuSize[2]; b++)
                                     for (c = 0u; c < sudokuSize[2]; c++) {
-                                        if (sudokuCount(d = sudokuPosition[a][b][c]) > 1u) {
+                                        if (!sudokuContent[ d = sudokuPosition[a][b][c] ]) {
                                             for (e = 0u; e < sudokuSize[2]; e++)
                                                 if (e != c)
-                                                if (sudokuCount(f = sudokuPosition[a][b][e]) == 1u)
+                                                if (sudokuContent[ f = sudokuPosition[a][b][e] ])
                                                 if (modNumber(d, sudokuContent[f]))
                                                     sudokuSuccess = true;
                                             for (e = 1u; e <= sudokuSize[2]; e++)
@@ -240,10 +240,10 @@ int main(int argc, char** _argv) {
                                     if (sudokuX)
                                         for (a = 0u; a <            2u; a++)
                                         for (c = 0u; c < sudokuSize[2]; c++) {
-                                            if (sudokuCount(d = sudokuXPosition[a][c]) > 1u) {
+                                            if (!sudokuContent[ d = sudokuXPosition[a][c] ]) {
                                                 for (e = 0u; e < sudokuSize[2]; e++)
                                                     if (e != c)
-                                                    if (sudokuCount(f = sudokuXPosition[a][e]) == 1u)
+                                                    if (sudokuContent[ f = sudokuXPosition[a][e] ])
                                                     if (modNumber(d, sudokuContent[f]))
                                                         sudokuSuccess = true;
                                                 for (e = 1u; e <= sudokuSize[2]; e++)
@@ -318,7 +318,7 @@ uint_sudoku_t sudokuCount(uint_sudoku_t n) {
 uint_sudoku_t sudokuCount() {
     uint_sudoku_t x = 0u;
     for (uint_sudoku_t i = 0u; i < sudokuSize[3]; i++)
-        if (sudokuCount(i) == 1u)
+        if (sudokuContent[i])
             x++;
     return x;
 }
@@ -338,11 +338,12 @@ void sudokuPrint(bool b) {
     if (b)
         for (uint_sudoku_t i = 0u; i < sudokuSize[3]; i++) {
             for (auto k = uint_digits(sudokuContent[i]); k < sudokuStrSize[0]; k++)
-                cout << 0;
+                cout << '0';
             cout << sudokuContent[i];
         }
-    else for (uint_sudoku_t i = 0u; i < sudokuStrSize[1]; i++)
-             cout << 0;
+    else
+        for (uint_sudoku_t i = 0u; i < sudokuStrSize[1]; i++)
+            cout << '0';
     cout << endl;
 }
 
@@ -393,7 +394,7 @@ bool modNumber(uint_sudoku_t n, uint_sudoku_t x) {
 bool sudokuXAddress(uint_sudoku_t x, unsigned char a, uint_sudoku_t& b) {
     if (!sudokuXAddressValid[a][x])
         return false;
-    b = sudokuXAddressMap[a][x];
+    b = sudokuXAddressMap[a].at(x);
     return true;
 }
 
