@@ -1,4 +1,4 @@
-/* Al Klimov's Number Placer  1.0.24 (2014-05-10)
+/* Al Klimov's Number Placer  1.0.25 (2014-06-01)
  * Copyright (C) 2013-2014  Alexander A. Klimov
  * Written in C++11
  *
@@ -22,8 +22,17 @@
 #include <array>
 #include <map>
 #include <stdexcept>
+/* invalid_argument
+   out_of_range
+   length_error */
 #include <new>
+// bad_alloc
 #include <cstdlib>
+/* EXIT_SUCCESS
+   EXIT_FAILURE */
+#include <cstddef>
+// size_t
+
 using namespace std;
 using uint_sudoku_t = unsigned long long;
 
@@ -65,7 +74,7 @@ uint_sudoku_t sudokuCount(uint_sudoku_t);
 uint_sudoku_t uint_digits(uint_sudoku_t);
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.24\n"
+    cerr << "Al Klimov's Number Placer  1.0.25\n"
             "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; ++i)
@@ -171,9 +180,10 @@ int main(int argc, char** _argv) {
     bool firstLine = true,
          sudokuSuccess;
     string sudokuInStr;
+    size_t sudokuInStrLen;
     for (;;) {
         getline(cin, sudokuInStr);
-        auto sudokuInStrLen = sudokuInStr.length();
+        sudokuInStrLen = sudokuInStr.length();
         if (sudokuInStrLen) {
             if (sudokuInStrLen == sudokuStrSize[1]) {
                 for (uint_sudoku_t i = 0u; i < sudokuStrSize[1]; ++i)
@@ -183,19 +193,22 @@ int main(int argc, char** _argv) {
                                 "Each character must be a decimal number!" << endl;
                         return EXIT_FAILURE;
                     }
-                for (uint_sudoku_t i = 0u, j; i < sudokuSize[3]; ++i) {
-                    auto s = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
-                    try {
-                        if ((j = stoull(s)) > sudokuSize[2]) {
-                            cerr << "Error: Invalid input!\n"
-                                    "Number " << j << " out of range (0-" << sudokuSize[2] << ")!" << endl;
+                {
+                    string s;
+                    for (uint_sudoku_t i = 0u, j; i < sudokuSize[3]; ++i) {
+                        s = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
+                        try {
+                            if ((j = stoull(s)) > sudokuSize[2]) {
+                                cerr << "Error: Invalid input!\n"
+                                        "Number " << j << " out of range (0-" << sudokuSize[2] << ")!" << endl;
+                                return EXIT_FAILURE;
+                            } else setNumber(i, j);
+                        } catch (const out_of_range& e) {
+                            (void)e;
+                            cerr << "Error: Invalid input: '" << s << "'\n"
+                                    "Integer out of range!" << endl;
                             return EXIT_FAILURE;
-                        } else setNumber(i, j);
-                    } catch (const out_of_range& e) {
-                        (void)e;
-                        cerr << "Error: Invalid input: '" << s << "'\n"
-                                "Integer out of range!" << endl;
-                        return EXIT_FAILURE;
+                        }
                     }
                 }
                 auto i = sudokuCount();
@@ -335,8 +348,8 @@ uint_sudoku_t uint_digits(uint_sudoku_t n) {
 
 void sudokuPrint(bool b) {
     if (b)
-        for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i) {
-            for (auto k = uint_digits(sudokuContent[i]); k < sudokuStrSize[0]; ++k)
+        for (uint_sudoku_t i = 0u, k; i < sudokuSize[3]; ++i) {
+            for (k = uint_digits(sudokuContent[i]); k < sudokuStrSize[0]; ++k)
                 cout << '0';
             cout << sudokuContent[i];
         }
