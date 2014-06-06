@@ -1,8 +1,11 @@
-/* Al Klimov's Number Placer  1.0.26 (2014-06-03)
- * Copyright (C) 2013-2014  Alexander A. Klimov
- * Written in C++11
- *
- * This program is free software: you can redistribute it and/or modify
+#define NUMBER_PLACER \
+  "Al Klimov's Number Placer"
+#define NUMBER_PLACER_VERSION \
+  "1.0.27"
+#define NUMBER_PLACER_COPYRIGHT \
+  "Copyright (C) 2013-2014  Alexander A. Klimov"
+
+/* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -15,6 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Written in C++11
 
 #include <iostream>
 #include <string>
@@ -44,7 +49,6 @@ uint_sudoku_t
     sudokuStrSize[2];
 vector<uint_sudoku_t>
     sudokuContent,
-    sudokuTestContent,
     sudokuXPosition[2];
 vector<vector<bool>>
     sudokuPossibilities;
@@ -74,8 +78,9 @@ uint_sudoku_t sudokuCount(uint_sudoku_t);
 uint_sudoku_t uint_digits(uint_sudoku_t);
 
 int main(int argc, char** _argv) {
-    cerr << "Al Klimov's Number Placer  1.0.26\n"
-            "Copyright (C) 2013-2014  Alexander A. Klimov\n" << endl;
+    cerr << NUMBER_PLACER "  "
+            NUMBER_PLACER_VERSION "\n"
+            NUMBER_PLACER_COPYRIGHT "\n" << endl;
     argv.resize(argc);
     for (decltype(argc) i = 0; i < argc; ++i)
         argv[i] = _argv[i];
@@ -132,7 +137,6 @@ int main(int argc, char** _argv) {
                 "Preparing... ";
         sudokuPossibilities.resize(sudokuSize[3]);
         sudokuContent      .resize(sudokuSize[3]);
-        sudokuTestContent  .resize(sudokuSize[3]);
         for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i)
             sudokuPossibilities[i].resize(sudokuSize[2]);
         for (unsigned char i = 0u; i < 3u; ++i) {
@@ -412,21 +416,17 @@ bool sudokuXAddress(uint_sudoku_t x, unsigned char a, uint_sudoku_t& b) {
 
 void sudokuTest() {
     for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i)
-        sudokuTestContent[i] = 0u;
+        sudokuContent[i] = 0u;
     for (uint_sudoku_t n = 0u;;) {
-        while (++sudokuTestContent[n] <= sudokuSize[2])
-            if (getNumberPossibility(n, sudokuTestContent[n]))
+        while (++sudokuContent[n] <= sudokuSize[2])
+            if (getNumberPossibility(n, sudokuContent[n]))
             if (sudokuTest(n)) {
                 if (n < sudokuSize[3] - 1u)
                     ++n;
-                else {
-                    for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i)
-                        setNumber(i, sudokuTestContent[i]);
-                    return;
-                }
+                else return;
             }
         if (n)
-            sudokuTestContent[n--] = 0u;
+            sudokuContent[n--] = 0u;
         else {
             sudokuFail = true;
             return;
@@ -441,8 +441,8 @@ bool sudokuTest(uint_sudoku_t n) {
     for (b = 0u; b < sudokuSize[2]; ++b)
         if (b != sudokuAddress[a][n][1]) {
             c = sudokuPosition[a][ sudokuAddress[a][n][0] ][b];
-            if (sudokuTestContent[c] &&
-                sudokuTestContent[c] == sudokuTestContent[n])
+            if (sudokuContent[c] &&
+                sudokuContent[c] == sudokuContent[n])
                 return false;
         }
     if (sudokuX)
@@ -451,9 +451,13 @@ bool sudokuTest(uint_sudoku_t n) {
                 for (c = 0u; c < sudokuSize[2]; ++c)
                     if (c != b) {
                         d = sudokuXPosition[a][c];
-                        if (sudokuTestContent[d] &&
-                            sudokuTestContent[d] == sudokuTestContent[n])
+                        if (sudokuContent[d] &&
+                            sudokuContent[d] == sudokuContent[n])
                             return false;
                     }
     return true;
 }
+
+#undef NUMBER_PLACER
+#undef NUMBER_PLACER_VERSION
+#undef NUMBER_PLACER_COPYRIGHT
