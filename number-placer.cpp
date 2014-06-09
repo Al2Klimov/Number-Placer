@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.29" "\n" \
+  "Al Klimov's Number Placer  1.0.30" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -19,51 +19,61 @@
 // Written in C++11
 
 #include <iostream>
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include <string>
+using std::string;
+using std::getline;
+using std::to_string;
+
+#include <sstream>
+using std::istringstream;
+
 #include <map>
-#include <stdexcept>
-/* invalid_argument
-   out_of_range
-   length_error */
+using std::map;
+
 #include <new>
+using std::bad_alloc;
+
 #include <cstdlib>
 /* EXIT_SUCCESS
    EXIT_FAILURE */
+
 #include <cstddef>
 // size_t
-
-using namespace std;
-using uint_sudoku_t = unsigned long long;
 
 bool
     sudokuX = false,
     sudokuFail,
   **sudokuPossibilities,
    *sudokuXAddressValid[2];
-uint_sudoku_t
+size_t
     sudokuSize[4],
     sudokuStrSize[2],
    *sudokuContent,
    *sudokuAddress[3][2],
   **sudokuPosition[3],
    *sudokuXPosition[2];
-map<uint_sudoku_t,uint_sudoku_t>
+map<size_t,size_t>
     sudokuXAddressMap[2];
 
 #define SudokuAddress(x, y, z) \
         sudokuAddress[x][z][y]
 
-inline bool sudokuDone();
-void setNumber(uint_sudoku_t, uint_sudoku_t);
+void setNumber(size_t, size_t);
 void sudokuPrint(bool);
 void sudokuTest();
-bool sudokuTest(uint_sudoku_t);
+bool sudokuTest(size_t);
 bool sudokuCheck();
-bool modNumber(uint_sudoku_t, uint_sudoku_t);
-bool sudokuXAddress(uint_sudoku_t, unsigned char, uint_sudoku_t&);
-uint_sudoku_t sudokuCount();
-uint_sudoku_t sudokuCount(uint_sudoku_t);
-uint_sudoku_t uint_digits(uint_sudoku_t);
+bool modNumber(size_t, size_t);
+bool sudokuXAddress(size_t, unsigned char, size_t&);
+unsigned char sudokuCount(size_t);
+size_t sudokuCount();
+size_t uIntDigits(size_t);
+size_t sToSize_t(const string&);
 
 #define InvalidCmdArg(i, s) \
         cerr << "Error: Invalid command-line argument " \
@@ -73,6 +83,9 @@ uint_sudoku_t uint_digits(uint_sudoku_t);
 
 #define SudokuPossibility(x, y) \
         sudokuPossibilities[x][ (y) - 1u ]
+
+#define SudokuDone() \
+        (sudokuFail || sudokuCount() == sudokuSize[3])
 
 int main(int argc, char** argv) {
     cerr << NUMBER_PLACER "\n" << endl;
@@ -97,84 +110,81 @@ int main(int argc, char** argv) {
                 sudokuSize[i] = i ? sudokuSize[0] : 3u;
             else {
                 try {
-                    if ((sudokuSize[i] = stoull(args[i+1])) < 2u)
-                        throw invalid_argument("");
-                } catch (const invalid_argument& e) {
-                    (void)e;
-                    InvalidCmdArg(i + 1,
-                        (!sudokuX && argc - 1 == i + 1)
-                        ? "Must be an integer >= 2 or 'X' or 'x'!"
-                        : "Must be an integer >= 2!");
-                } catch (const out_of_range& e) {
-                    (void)e;
-                    InvalidCmdArg(i + 1, "Not an integer or out of range!");
+                    if ((sudokuSize[i] = sToSize_t(args[i+1])) < 2u)
+                        throw args[i+1];
+                } catch (const string& s) {
+                    (void)s;
+                    InvalidCmdArg(
+                        i + 1,
+                        "Must be an integer (2 <= n <= " + to_string(size_t(-1)) + (
+                            (!sudokuX && argc - 1 == i + 1)
+                            ? "), 'X' or 'x'!"
+                            : ")!"
+                        )
+                    );
                 }
             }
         }
         delete[] args;
         sudokuSize[2] = sudokuSize[0] * sudokuSize[1];
         sudokuSize[3] = sudokuSize[2] * sudokuSize[2];
-        sudokuStrSize[0] = uint_digits(sudokuSize[2]);
+        sudokuStrSize[0] = uIntDigits(sudokuSize[2]);
         sudokuStrSize[1] = sudokuStrSize[0] * sudokuSize[3];
-        try {
-            if (!(sudokuSize[0]    &&
-                  sudokuSize[1]    &&
-                  sudokuSize[2]    &&
-                  sudokuSize[3]    &&
-                  sudokuStrSize[0] &&
-                  sudokuStrSize[1]))
-                throw length_error("");
-            if (!(sudokuSize[3] / sudokuSize[2] == sudokuSize[2] &&
-                  sudokuSize[2] / sudokuSize[1] == sudokuSize[0] &&
-               sudokuStrSize[1] / sudokuSize[3] == sudokuStrSize[0]))
-                throw length_error("");
-            cerr << "Sudoku size: " << sudokuSize[0] << "x" << sudokuSize[1] << " "
-                                "(" << sudokuSize[2] << "x" << sudokuSize[2] << ")\n"
-                    "X-Sudoku: " << (sudokuX ? "yes" : "no") << "\n"
-                    "\n"
-                    "Preparing... ";
-            sudokuContent = new uint_sudoku_t[sudokuSize[3]];
-            sudokuPossibilities = new bool*[sudokuSize[3]];
-            for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i)
-                sudokuPossibilities[i] = new bool[sudokuSize[2]];
-            for (unsigned char i = 0u; i < 3u; ++i) {
-                for (unsigned char j = 0u; j < 2u; ++j)
-                    sudokuAddress[i][j] = new uint_sudoku_t[sudokuSize[3]];
-                sudokuPosition[i] = new uint_sudoku_t*[sudokuSize[2]];
-                for (uint_sudoku_t j = 0u, k; j < sudokuSize[2]; ++j) {
-                    sudokuPosition[i][j] = new uint_sudoku_t[sudokuSize[2]];
-                    for (k = 0u; k < sudokuSize[2]; ++k) {
-                        if (i == 2u)
-                            sudokuPosition[2][j][k] =
-                                j / sudokuSize[1] * sudokuSize[2] * sudokuSize[1] +
-                                k / sudokuSize[0] * sudokuSize[2] +
-                                j % sudokuSize[1] * sudokuSize[0] +
-                                k % sudokuSize[0];
-                        else sudokuPosition[i][j][k] = i ? (k * sudokuSize[2] + j)
-                                                         : (j * sudokuSize[2] + k);
-                        SudokuAddress(i, sudokuPosition[i][j][k], 0) = j;
-                        SudokuAddress(i, sudokuPosition[i][j][k], 1) = k;
-                    }
-                }
-            }
-            if (sudokuX)
-                for (unsigned char i = 0u; i < 2u; ++i) {
-                    sudokuXPosition[i] = new uint_sudoku_t[sudokuSize[2]];
-                    sudokuXAddressValid[i] = new bool[sudokuSize[3]];
-                    for (uint_sudoku_t j = 0u; j < sudokuSize[3]; ++j)
-                        sudokuXAddressValid[i][j] = false;
-                    for (uint_sudoku_t j = 0u; j < sudokuSize[2]; ++j) {
-                        sudokuXAddressValid[i][
-                            sudokuXPosition[i][j] = j * sudokuSize[2] + (i ? (sudokuSize[2] - 1u - j) : j)
-                        ] = true;
-                        sudokuXAddressMap[i][ sudokuXPosition[i][j] ] = j;
-                    }
-                }
-        } catch (const length_error& e) {
-            (void)e;
+        if (!(
+            sudokuSize[0] &&
+            sudokuSize[1] &&
+            sudokuSize[2] &&
+            sudokuSize[3] &&
+            sudokuStrSize[0] &&
+            sudokuStrSize[1] &&
+            sudokuSize[3] / sudokuSize[2] == sudokuSize[2] &&
+            sudokuSize[2] / sudokuSize[1] == sudokuSize[0] &&
+         sudokuStrSize[1] / sudokuSize[3] == sudokuStrSize[0]
+        )) {
             cerr << "Error: Too large Sudoku!" << endl;
             return EXIT_FAILURE;
         }
+        cerr << "Sudoku size: " << sudokuSize[0] << "x" << sudokuSize[1] << " "
+                            "(" << sudokuSize[2] << "x" << sudokuSize[2] << ")\n"
+                "X-Sudoku: " << (sudokuX ? "yes" : "no") << "\n\n"
+                "Preparing... ";
+        sudokuContent = new size_t[sudokuSize[3]];
+        sudokuPossibilities = new bool*[sudokuSize[3]];
+        for (size_t i = 0u; i < sudokuSize[3]; ++i)
+            sudokuPossibilities[i] = new bool[sudokuSize[2]];
+        for (unsigned char i = 0u; i < 3u; ++i) {
+            for (unsigned char j = 0u; j < 2u; ++j)
+                sudokuAddress[i][j] = new size_t[sudokuSize[3]];
+            sudokuPosition[i] = new size_t*[sudokuSize[2]];
+            for (size_t j = 0u, k; j < sudokuSize[2]; ++j) {
+                sudokuPosition[i][j] = new size_t[sudokuSize[2]];
+                for (k = 0u; k < sudokuSize[2]; ++k) {
+                    if (i == 2u)
+                        sudokuPosition[2][j][k] =
+                            j / sudokuSize[1] * sudokuSize[2] * sudokuSize[1] +
+                            k / sudokuSize[0] * sudokuSize[2] +
+                            j % sudokuSize[1] * sudokuSize[0] +
+                            k % sudokuSize[0];
+                    else sudokuPosition[i][j][k] = i ? (k * sudokuSize[2] + j)
+                                                     : (j * sudokuSize[2] + k);
+                    SudokuAddress(i, sudokuPosition[i][j][k], 0) = j;
+                    SudokuAddress(i, sudokuPosition[i][j][k], 1) = k;
+                }
+            }
+        }
+        if (sudokuX)
+            for (unsigned char i = 0u; i < 2u; ++i) {
+                sudokuXPosition[i] = new size_t[sudokuSize[2]];
+                sudokuXAddressValid[i] = new bool[sudokuSize[3]];
+                for (size_t j = 0u; j < sudokuSize[3]; ++j)
+                    sudokuXAddressValid[i][j] = false;
+                for (size_t j = 0u; j < sudokuSize[2]; ++j) {
+                    sudokuXAddressValid[i][
+                        sudokuXPosition[i][j] = j * sudokuSize[2] + (i ? (sudokuSize[2] - 1u - j) : j)
+                    ] = true;
+                    sudokuXAddressMap[i][ sudokuXPosition[i][j] ] = j;
+                }
+            }
     } catch (const bad_alloc& e) {
         (void)e;
         cerr << "Error: Out of memory!" << endl;
@@ -190,27 +200,17 @@ int main(int argc, char** argv) {
         sudokuInStrLen = sudokuInStr.length();
         if (sudokuInStrLen) {
             if (sudokuInStrLen == sudokuStrSize[1]) {
-                for (uint_sudoku_t i = 0u; i < sudokuStrSize[1]; ++i)
-                    if (!('0' <= sudokuInStr[i] &&
-                                 sudokuInStr[i] <= '9')) {
-                        cerr << "Error: Invalid input!\n"
-                                "Each character must be a decimal number!" << endl;
-                        return EXIT_FAILURE;
-                    }
                 {
                     string s;
-                    for (uint_sudoku_t i = 0u, j; i < sudokuSize[3]; ++i) {
+                    for (size_t i = 0u, j; i < sudokuSize[3]; ++i) {
                         s = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
                         try {
-                            if ((j = stoull(s)) > sudokuSize[2]) {
-                                cerr << "Error: Invalid input!\n"
-                                        "Number " << j << " out of range (0-" << sudokuSize[2] << ")!" << endl;
-                                return EXIT_FAILURE;
-                            } else setNumber(i, j);
-                        } catch (const out_of_range& e) {
-                            (void)e;
+                            if ((j = sToSize_t(s)) > sudokuSize[2])
+                                throw s;
+                            setNumber(i, j);
+                        } catch (const string& s) {
                             cerr << "Error: Invalid input: '" << s << "'\n"
-                                    "Integer out of range!" << endl;
+                                    "Must be an integer (0 <= n <= " << sudokuSize[2] << ")!" << endl;
                             return EXIT_FAILURE;
                         }
                     }
@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
                         else {
                             sudokuFail = false;
                             unsigned char a;
-                            uint_sudoku_t b, c, d, e, f;
+                            size_t b, c, d, e, f;
                             do {
                                 sudokuSuccess = false;
                                 for (a = 0u; a <            3u; ++a)
@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
                                             if (e != c)
                                             if (sudokuContent[ f = sudokuPosition[a][b][e] ])
                                             if (modNumber(d, sudokuContent[f])) {
-                                                if (sudokuDone())
+                                                if (SudokuDone())
                                                     goto SudokuInterrupt;
                                                 sudokuSuccess = true;
                                             }
@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
                                                     if (f != c && SudokuPossibility(sudokuPosition[a][b][f], e))
                                                         goto ContinueParentLoop1;
                                                 setNumber(d, e);
-                                                if (sudokuDone())
+                                                if (SudokuDone())
                                                     goto SudokuInterrupt;
                                                 sudokuSuccess = true;
                                                 break;
@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
                                                 if (e != c)
                                                 if (sudokuContent[ f = sudokuXPosition[a][e] ])
                                                 if (modNumber(d, sudokuContent[f])) {
-                                                    if (sudokuDone())
+                                                    if (SudokuDone())
                                                         goto SudokuInterrupt;
                                                     sudokuSuccess = true;
                                                 }
@@ -270,7 +270,7 @@ int main(int argc, char** argv) {
                                                         if (f != c && SudokuPossibility(sudokuXPosition[a][f], e))
                                                             goto ContinueParentLoop2;
                                                     setNumber(d, e);
-                                                    if (sudokuDone())
+                                                    if (SudokuDone())
                                                         goto SudokuInterrupt;
                                                     sudokuSuccess = true;
                                                     break;
@@ -314,32 +314,52 @@ int main(int argc, char** argv) {
 
 #undef NUMBER_PLACER
 #undef InvalidCmdArg
+#undef SudokuDone
 
-void setNumber(uint_sudoku_t n, uint_sudoku_t x) {
+size_t sToSize_t(const string& s) {
+    static istringstream iss;
+    if (s.empty())
+        throw s;
+    {
+        auto l = s.length();
+        for (decltype(l) i = 0u; i < l; ++i)
+            if (!('0' <= s[i] &&
+                         s[i] <= '9'))
+                throw s;
+    }
+    size_t i;
+    iss.clear();
+    iss.str(s);
+    if ((iss >> i).fail())
+        throw s;
+    return i;
+}
+
+void setNumber(size_t n, size_t x) {
     sudokuContent[n] = x;
-    for (uint_sudoku_t i = 0u; i < sudokuSize[2]; ++i)
+    for (size_t i = 0u; i < sudokuSize[2]; ++i)
         sudokuPossibilities[n][i] = x ? (i == x - 1u) : true;
 }
 
-uint_sudoku_t sudokuCount(uint_sudoku_t n) {
-    uint_sudoku_t x = 0u;
-    for (uint_sudoku_t i = 0u; i < sudokuSize[2]; ++i)
+unsigned char sudokuCount(size_t n) {
+    unsigned char x = 0u;
+    for (size_t i = 0u; i < sudokuSize[2]; ++i)
         if (sudokuPossibilities[n][i])
         if (++x > 1u)
             break;
     return x;
 }
 
-uint_sudoku_t sudokuCount() {
-    uint_sudoku_t x = 0u;
-    for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i)
+size_t sudokuCount() {
+    size_t x = 0u;
+    for (size_t i = 0u; i < sudokuSize[3]; ++i)
         if (sudokuContent[i])
             ++x;
     return x;
 }
 
-uint_sudoku_t uint_digits(uint_sudoku_t n) {
-    uint_sudoku_t x = 0u;
+size_t uIntDigits(size_t n) {
+    size_t x = 0u;
     do ++x;
     while (n /= 10u);
     return x;
@@ -347,20 +367,20 @@ uint_sudoku_t uint_digits(uint_sudoku_t n) {
 
 void sudokuPrint(bool b) {
     if (b)
-        for (uint_sudoku_t i = 0u, k; i < sudokuSize[3]; ++i) {
-            for (k = uint_digits(sudokuContent[i]); k < sudokuStrSize[0]; ++k)
+        for (size_t i = 0u, k; i < sudokuSize[3]; ++i) {
+            for (k = uIntDigits(sudokuContent[i]); k < sudokuStrSize[0]; ++k)
                 cout << '0';
             cout << sudokuContent[i];
         }
     else
-        for (uint_sudoku_t i = 0u; i < sudokuStrSize[1]; ++i)
+        for (size_t i = 0u; i < sudokuStrSize[1]; ++i)
             cout << '0';
     cout << endl;
 }
 
 bool sudokuCheck() {
     unsigned char i;
-    uint_sudoku_t j, k, l, m;
+    size_t j, k, l, m;
     for (i = 0u; i <                 3u; ++i)
     for (j = 0u; j < sudokuSize[2]     ; ++j)
     for (k = 0u; k < sudokuSize[2] - 1u; ++k) {
@@ -380,18 +400,14 @@ bool sudokuCheck() {
     return true;
 }
 
-bool sudokuDone() {
-    return sudokuFail || sudokuCount() == sudokuSize[3];
-}
-
-bool modNumber(uint_sudoku_t n, uint_sudoku_t x) {
+bool modNumber(size_t n, size_t x) {
     bool b = sudokuPossibilities[n][--x];
     if (b) {
         sudokuPossibilities[n][x] = false;
         auto i = sudokuCount(n);
         if (i) {
             if (i == 1u) {
-                uint_sudoku_t j = 1u;
+                size_t j = 1u;
                 while (!SudokuPossibility(n, j))
                     ++j;
                 sudokuContent[n] = j;
@@ -401,7 +417,7 @@ bool modNumber(uint_sudoku_t n, uint_sudoku_t x) {
     return b;
 }
 
-bool sudokuXAddress(uint_sudoku_t x, unsigned char a, uint_sudoku_t& b) {
+bool sudokuXAddress(size_t x, unsigned char a, size_t& b) {
     if (!sudokuXAddressValid[a][x])
         return false;
     b = sudokuXAddressMap[a].at(x);
@@ -409,9 +425,9 @@ bool sudokuXAddress(uint_sudoku_t x, unsigned char a, uint_sudoku_t& b) {
 }
 
 void sudokuTest() {
-    for (uint_sudoku_t i = 0u; i < sudokuSize[3]; ++i)
+    for (size_t i = 0u; i < sudokuSize[3]; ++i)
         sudokuContent[i] = 0u;
-    for (uint_sudoku_t n = 0u;;) {
+    for (size_t n = 0u;;) {
         while (++sudokuContent[n] <= sudokuSize[2])
             if (SudokuPossibility(n, sudokuContent[n]))
             if (sudokuTest(n)) {
@@ -428,9 +444,9 @@ void sudokuTest() {
     }
 }
 
-bool sudokuTest(uint_sudoku_t n) {
+bool sudokuTest(size_t n) {
     unsigned char a;
-    uint_sudoku_t b, c, d;
+    size_t b, c, d;
     for (a = 0u; a <            3u; ++a)
     for (b = 0u; b < sudokuSize[2]; ++b)
         if (b != SudokuAddress(a, n, 1)) {
