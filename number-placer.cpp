@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.30" "\n" \
+  "Al Klimov's Number Placer  1.0.31" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -38,6 +38,12 @@ using std::map;
 #include <new>
 using std::bad_alloc;
 
+#include <cstdio>
+// sprintf
+
+#include <climits>
+// CHAR_MIN
+
 #include <cstdlib>
 /* EXIT_SUCCESS
    EXIT_FAILURE */
@@ -74,10 +80,11 @@ unsigned char sudokuCount(size_t);
 size_t sudokuCount();
 size_t uIntDigits(size_t);
 size_t sToSize_t(const string&);
+string repr(const string&);
 
 #define InvalidCmdArg(i, s) \
         cerr << "Error: Invalid command-line argument " \
-                "(" << (i) << "): '" << argv[i] << "'\n" \
+                "(" << (i) << "): " << repr(args[i]) << "\n" \
              << (s) << endl; \
         return EXIT_FAILURE
 
@@ -209,7 +216,7 @@ int main(int argc, char** argv) {
                                 throw s;
                             setNumber(i, j);
                         } catch (const string& s) {
-                            cerr << "Error: Invalid input: '" << s << "'\n"
+                            cerr << "Error: Invalid input: " << repr(s) << "\n"
                                     "Must be an integer (0 <= n <= " << sudokuSize[2] << ")!" << endl;
                             return EXIT_FAILURE;
                         }
@@ -320,19 +327,46 @@ size_t sToSize_t(const string& s) {
     static istringstream iss;
     if (s.empty())
         throw s;
-    {
-        auto l = s.length();
-        for (decltype(l) i = 0u; i < l; ++i)
-            if (!('0' <= s[i] &&
-                         s[i] <= '9'))
-                throw s;
-    }
+    for (auto i = s.begin(); i != s.end(); ++i)
+        if (!('0' <= *i &&
+                     *i <= '9'))
+            throw s;
     size_t i;
     iss.clear();
     iss.str(s);
     if ((iss >> i).fail())
         throw s;
     return i;
+}
+
+string repr(const string& s) {
+    string r = "\"";
+    char c[3];
+    for (auto i = s.begin(); i != s.end(); ++i)
+        switch (*i) {
+            case '\\':
+                r += "\\\\";
+                break;
+            case '"':
+                r += "\\\"";
+                break;
+            default:
+                if (' ' <= *i &&
+                           *i <= '~')
+                    r += *i;
+                else {
+                    sprintf(
+                        c, "%02X",
+#if CHAR_MIN == 0
+                        int(*i)
+#else
+                        (int(*i) + 256) % 256
+#endif
+                    );
+                    (r += "\\x") += c;
+                }
+        }
+    return r + "\"";
 }
 
 void setNumber(size_t n, size_t x) {
