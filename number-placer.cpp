@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.31" "\n" \
+  "Al Klimov's Number Placer  1.0.32" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -32,9 +32,6 @@ using std::to_string;
 #include <sstream>
 using std::istringstream;
 
-#include <map>
-using std::map;
-
 #include <new>
 using std::bad_alloc;
 
@@ -63,8 +60,6 @@ size_t
    *sudokuAddress[3][2],
   **sudokuPosition[3],
    *sudokuXPosition[2];
-map<size_t,size_t>
-    sudokuXAddressMap[2];
 
 #define SudokuAddress(x, y, z) \
         sudokuAddress[x][z][y]
@@ -109,7 +104,7 @@ int main(int argc, char** argv) {
             if (args[argc-1] == "X" || args[argc-1] == "x")
                 sudokuX = true;
             else if (argc == 4) {
-                InvalidCmdArg(3, "Must be 'X' or 'x'!");
+                InvalidCmdArg(3, "Must be \"X\" or \"x\"!");
             }
         }
         for (signed char i = 0; i < 2; ++i) {
@@ -125,7 +120,7 @@ int main(int argc, char** argv) {
                         i + 1,
                         "Must be an integer (2 <= n <= " + to_string(size_t(-1)) + (
                             (!sudokuX && argc - 1 == i + 1)
-                            ? "), 'X' or 'x'!"
+                            ? "), \"X\" or \"x\"!"
                             : ")!"
                         )
                     );
@@ -185,12 +180,10 @@ int main(int argc, char** argv) {
                 sudokuXAddressValid[i] = new bool[sudokuSize[3]];
                 for (size_t j = 0u; j < sudokuSize[3]; ++j)
                     sudokuXAddressValid[i][j] = false;
-                for (size_t j = 0u; j < sudokuSize[2]; ++j) {
+                for (size_t j = 0u; j < sudokuSize[2]; ++j)
                     sudokuXAddressValid[i][
                         sudokuXPosition[i][j] = j * sudokuSize[2] + (i ? (sudokuSize[2] - 1u - j) : j)
                     ] = true;
-                    sudokuXAddressMap[i][ sudokuXPosition[i][j] ] = j;
-                }
             }
     } catch (const bad_alloc& e) {
         (void)e;
@@ -215,8 +208,8 @@ int main(int argc, char** argv) {
                             if ((j = sToSize_t(s)) > sudokuSize[2])
                                 throw s;
                             setNumber(i, j);
-                        } catch (const string& s) {
-                            cerr << "Error: Invalid input: " << repr(s) << "\n"
+                        } catch (const string& S) {
+                            cerr << "Error: Invalid input: " << repr(S) << "\n"
                                     "Must be an integer (0 <= n <= " << sudokuSize[2] << ")!" << endl;
                             return EXIT_FAILURE;
                         }
@@ -344,12 +337,15 @@ string repr(const string& s) {
     char c[3];
     for (auto i = s.begin(); i != s.end(); ++i)
         switch (*i) {
-            case '\\':
-                r += "\\\\";
-                break;
-            case '"':
-                r += "\\\"";
-                break;
+            case '\a': r += "\\a";  break;
+            case '\b': r += "\\b";  break;
+            case '\f': r += "\\f";  break;
+            case '\n': r += "\\n";  break;
+            case '\r': r += "\\r";  break;
+            case '\t': r += "\\t";  break;
+            case '\v': r += "\\v";  break;
+            case '\\': r += "\\\\"; break;
+            case '"':  r += "\\\""; break;
             default:
                 if (' ' <= *i &&
                            *i <= '~')
@@ -454,7 +450,8 @@ bool modNumber(size_t n, size_t x) {
 bool sudokuXAddress(size_t x, unsigned char a, size_t& b) {
     if (!sudokuXAddressValid[a][x])
         return false;
-    b = sudokuXAddressMap[a].at(x);
+    b = a ? (x / (sudokuSize[2] - 1u) - 1u)
+          : (x / (sudokuSize[2] + 1u));
     return true;
 }
 
