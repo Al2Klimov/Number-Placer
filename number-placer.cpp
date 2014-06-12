@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.32" "\n" \
+  "Al Klimov's Number Placer  1.0.33" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -231,9 +231,11 @@ int main(int argc, char** argv) {
                                 for (c = 0u; c < sudokuSize[2]; ++c) {
                                     if (!sudokuContent[ d = sudokuPosition[a][b][c] ]) {
                                         for (e = 0u; e < sudokuSize[2]; ++e)
-                                            if (e != c)
-                                            if (sudokuContent[ f = sudokuPosition[a][b][e] ])
-                                            if (modNumber(d, sudokuContent[f])) {
+                                            if (
+                                                e != c
+                                             && sudokuContent[ f = sudokuPosition[a][b][e] ]
+                                             && modNumber(d, sudokuContent[f])
+                                            ) {
                                                 if (SudokuDone())
                                                     goto SudokuInterrupt;
                                                 sudokuSuccess = true;
@@ -257,9 +259,11 @@ int main(int argc, char** argv) {
                                     for (c = 0u; c < sudokuSize[2]; ++c) {
                                         if (!sudokuContent[ d = sudokuXPosition[a][c] ]) {
                                             for (e = 0u; e < sudokuSize[2]; ++e)
-                                                if (e != c)
-                                                if (sudokuContent[ f = sudokuXPosition[a][e] ])
-                                                if (modNumber(d, sudokuContent[f])) {
+                                                if (
+                                                    e != c
+                                                 && sudokuContent[ f = sudokuXPosition[a][e] ]
+                                                 && modNumber(d, sudokuContent[f])
+                                                ) {
                                                     if (SudokuDone())
                                                         goto SudokuInterrupt;
                                                     sudokuSuccess = true;
@@ -374,8 +378,7 @@ void setNumber(size_t n, size_t x) {
 unsigned char sudokuCount(size_t n) {
     unsigned char x = 0u;
     for (size_t i = 0u; i < sudokuSize[2]; ++i)
-        if (sudokuPossibilities[n][i])
-        if (++x > 1u)
+        if (sudokuPossibilities[n][i] && ++x > 1u)
             break;
     return x;
 }
@@ -460,8 +463,10 @@ void sudokuTest() {
         sudokuContent[i] = 0u;
     for (size_t n = 0u;;) {
         while (++sudokuContent[n] <= sudokuSize[2])
-            if (SudokuPossibility(n, sudokuContent[n]))
-            if (sudokuTest(n)) {
+            if (
+                SudokuPossibility(n, sudokuContent[n])
+             && sudokuTest(n)
+            ) {
                 if (n < sudokuSize[3] - 1u)
                     ++n;
                 else return;
