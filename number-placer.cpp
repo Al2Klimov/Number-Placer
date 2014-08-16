@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.35" "\n" \
+  "Al Klimov's Number Placer  1.0.36" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -241,9 +241,9 @@ size_t sToSize_t(const string& s) {
     static istringstream iss;
     if (s.empty())
         throw s;
-    for (auto i = s.begin(); i != s.end(); ++i)
-        if (!('0' <= *i &&
-                     *i <= '9'))
+    for (const auto c : s)
+        if (!('0' <= c &&
+                     c <= '9'))
             throw s;
     size_t i;
     iss.clear();
@@ -255,9 +255,9 @@ size_t sToSize_t(const string& s) {
 
 string repr(const string& s) {
     string r = "\"";
-    char c[3];
-    for (auto i = s.begin(); i != s.end(); ++i)
-        switch (*i) {
+    char buf[3];
+    for (const auto c : s)
+        switch (c) {
             case '\a': r += "\\a";  break;
             case '\b': r += "\\b";  break;
             case '\f': r += "\\f";  break;
@@ -268,19 +268,19 @@ string repr(const string& s) {
             case '\\': r += "\\\\"; break;
             case '"':  r += "\\\""; break;
             default:
-                if (' ' <= *i &&
-                           *i <= '~')
-                    r += *i;
+                if (' ' <= c &&
+                           c <= '~')
+                    r += c;
                 else {
                     sprintf(
-                        c, "%02X",
+                        buf, "%02X",
 #if CHAR_MIN == 0
-                        int(*i)
+                        int(c)
 #else
-                        (int(*i) + 256) % 256
+                        (int(c) + 256) % 256
 #endif
                     );
-                    (r += "\\x") += c;
+                    (r += "\\x") += buf;
                 }
         }
     return r + "\"";
