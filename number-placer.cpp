@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.36" "\n" \
+  "Al Klimov's Number Placer  1.0.37" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -42,28 +42,22 @@ using std::bad_alloc;
 // CHAR_MIN
 
 #include <cstdlib>
-/* EXIT_SUCCESS
-   EXIT_FAILURE */
+// EXIT_FAILURE
 
 #include <cstddef>
 // size_t
 
 class SystemExit {
 public:
-    SystemExit();
-    SystemExit(int);
     SystemExit(const string&);
     SystemExit(const SystemExit&);
 
     operator int (void) const;
 
     template<class T>
-    SystemExit& operator << (T rhs);
+    SystemExit& operator << (T);
 private:
-    int i;
     ostringstream oss;
-
-    void init(int, const string&);
 };
 
 class NumberPlacer {
@@ -112,7 +106,7 @@ int main(int argc, char **argv) {
 #undef NUMBER_PLACER
     try {
         if (argc > 4)
-            throw SystemExit("Error: '")
+            throw SystemExit("'")
                 << argv[0] << "' takes at most 3 command-line arguments ("
                 << (argc - 1) << " given)";
         try {
@@ -165,7 +159,7 @@ int main(int argc, char **argv) {
                 sudokuSize[3] / sudokuSize[2] == sudokuSize[2] &&
                 sudokuSize[2] / sudokuSize[1] == sudokuSize[0] &&
              sudokuStrSize[1] / sudokuSize[3] == sudokuStrSize[0]
-            )) throw SystemExit("Error: Too large Sudoku!");
+            )) throw SystemExit("Too large Sudoku!");
             cerr << "Sudoku size: " << sudokuSize[0] << "x" << sudokuSize[1] << " "
                                 "(" << sudokuSize[2] << "x" << sudokuSize[2] << ")\n"
                     "X-Sudoku: " << (sudokuX ? "yes" : "no") << "\n\n"
@@ -189,7 +183,7 @@ int main(int argc, char **argv) {
                                         throw s;
                                     sudoku << j;
                                 } catch (const string& S) {
-                                    throw SystemExit("Error: Invalid input: ")
+                                    throw SystemExit("Invalid input: ")
                                         << repr(S)
                                         << "\nMust be an integer (0 <= n <= "
                                         << sudokuSize[2] << ")!";
@@ -210,17 +204,17 @@ int main(int argc, char **argv) {
                         if (cin.eof()) {
                             cerr << "End of file.\n"
                                     "Warning: No EOL @ EOF" << endl;
-                            return EXIT_SUCCESS;
+                            break;
                         }
                         if (firstLine)
                             firstLine = false;
-                    } else throw SystemExit("Error: Invalid input!\nEach line must be ")
+                    } else throw SystemExit("Invalid input!\nEach line must be ")
                         << sudokuStrSize[1]
                         << " characters long!";
                 } else {
                     if (cin.eof()) {
                         cerr << (firstLine ? "EOF @ first line -- nothing to do." : "End of file.") << endl;
-                        return EXIT_SUCCESS;
+                        break;
                     } else {
                         cerr << "Warning: Ignoring blank line" << endl;
                         if (firstLine)
@@ -230,10 +224,10 @@ int main(int argc, char **argv) {
             }
         } catch (const bad_alloc& e) {
             (void)e;
-            throw SystemExit("Error: Out of memory!");
+            throw SystemExit("Out of memory!");
         }
-    } catch (const SystemExit& se) {
-        return se;
+    } catch (const SystemExit& e) {
+        return e;
     }
 }
 
@@ -294,46 +288,29 @@ size_t uIntDigits(size_t n) {
 }
 
 SystemExit invalidCmdArg(int argi, char **argv) {
-    SystemExit se ("Error: Invalid command-line argument (");
-    se << argi << "): " << repr(argv[argi]) << "\n";
-    return se;
+    return SystemExit("Invalid command-line argument (")
+        << argi << "): "
+        << repr(argv[argi]) << "\n";
 }
 
 // SystemExit
-SystemExit::SystemExit() {
-    init(EXIT_SUCCESS, "");
+SystemExit::SystemExit(const string& s) {
+    oss << s;
 }
 
-SystemExit::SystemExit(int I) {
-    init(I, "");
-}
-
-SystemExit::SystemExit(const string& S) {
-    init(EXIT_FAILURE, S);
-}
-
-SystemExit::SystemExit(const SystemExit& se) {
-    init(
-        se.i,
-        se.oss.str()
-    );
+SystemExit::SystemExit(const SystemExit& rhs) {
+    oss << rhs.oss.str();
 }
 
 SystemExit::operator int (void) const {
-    cerr << oss.str() << endl;
-    return i;
+    cerr << "Error: " << oss.str() << endl;
+    return EXIT_FAILURE;
 }
 
 template<class T>
 SystemExit& SystemExit::operator << (T rhs) {
     oss << rhs;
     return *this;
-}
-
-void SystemExit::init(int I, const string& s) {
-    i = I;
-    oss.str("");
-    oss << s;
 }
 // ~SystemExit
 
