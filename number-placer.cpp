@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.38" "\n" \
+  "Al Klimov's Number Placer" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
