@@ -1,5 +1,5 @@
 #define NUMBER_PLACER \
-  "Al Klimov's Number Placer  1.0.37" "\n" \
+  "Al Klimov's Number Placer  1.0.38" "\n" \
   "Copyright (C) 2013-2014  Alexander A. Klimov"
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -99,7 +99,6 @@ private:
 size_t uIntDigits(size_t);
 size_t sToSize_t(const string&);
 string repr(const string&);
-SystemExit invalidCmdArg(int, char**);
 
 int main(int argc, char **argv) {
     cerr << NUMBER_PLACER "\n" << endl;
@@ -118,7 +117,12 @@ int main(int argc, char **argv) {
                 if (args[argc-1] == "X" || args[argc-1] == "x")
                     sudokuX = true;
                 else if (argc == 4)
-                    throw invalidCmdArg(3, argv)
+#define invalidCmdArg(x) (\
+    SystemExit("Invalid command-line argument (")\
+        << (x) << "): "\
+        << repr(argv[x]) << "\n"\
+)
+                    throw invalidCmdArg(3)
                         << "Must be \"X\" or \"x\"!";
             }
             size_t
@@ -133,7 +137,8 @@ int main(int argc, char **argv) {
                             throw args[i+1];
                     } catch (const string& s) {
                         (void)s;
-                        throw invalidCmdArg(i + 1, argv)
+                        throw invalidCmdArg(i + 1)
+#undef invalidCmdArg
                             << "Must be an integer (2 <= n <= "
                             << size_t(-1)
                             << (
@@ -285,12 +290,6 @@ size_t uIntDigits(size_t n) {
     do ++x;
     while (n /= 10u);
     return x;
-}
-
-SystemExit invalidCmdArg(int argi, char **argv) {
-    return SystemExit("Invalid command-line argument (")
-        << argi << "): "
-        << repr(argv[argi]) << "\n";
 }
 
 // SystemExit
