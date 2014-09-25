@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
 #define invalidCmdArg(x) (\
     SystemExit("Invalid command-line argument (")\
         << (x) << "): "\
-        << repr(argv[x]) << "\n"\
+        << repr(argv[x]) << '\n'\
 )
                     throw invalidCmdArg(3)
                         << "Must be \"X\" or \"x\"!";
@@ -165,8 +165,8 @@ int main(int argc, char **argv) {
                 sudokuSize[2] / sudokuSize[1] == sudokuSize[0] &&
              sudokuStrSize[1] / sudokuSize[3] == sudokuStrSize[0]
             )) throw SystemExit("Too large Sudoku!");
-            cerr << "Sudoku size: " << sudokuSize[0] << "x" << sudokuSize[1] << " "
-                                "(" << sudokuSize[2] << "x" << sudokuSize[2] << ")\n"
+            cerr << "Sudoku size: " << sudokuSize[0] << 'x' << sudokuSize[1] << " "
+                                "(" << sudokuSize[2] << 'x' << sudokuSize[2] << ")\n"
                     "X-Sudoku: " << (sudokuX ? "yes" : "no") << "\n\n"
                     "Preparing... ";
             NumberPlacer sudoku (sudokuSize[0], sudokuSize[1], sudokuX);
@@ -282,7 +282,7 @@ string repr(const string& s) {
                     (r += "\\x") += buf;
                 }
         }
-    return r + "\"";
+    return r + '"';
 }
 
 size_t uIntDigits(size_t n) {
