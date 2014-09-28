@@ -168,27 +168,25 @@ int main(int argc, char **argv) {
             NumberPlacer sudoku (sudokuSize[0], sudokuSize[1], sudokuX);
             cerr << "done." << endl;
             bool firstLine = true;
-            string sudokuInStr;
+            string sudokuInStr,
+                   sudokuInSubStr;
             size_t sudokuInStrLen;
             for (;;) {
                 getline(cin, sudokuInStr);
                 sudokuInStrLen = sudokuInStr.length();
                 if (sudokuInStrLen) {
                     if (sudokuInStrLen == sudokuStrSize[1]) {
-                        {
-                            string s;
-                            for (size_t i = 0u, j; i < sudokuSize[3]; ++i) {
-                                s = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
-                                try {
-                                    if ((j = sToSize_t(s)) > sudokuSize[2])
-                                        throw s;
-                                    sudoku << j;
-                                } catch (const string& S) {
-                                    throw SystemExit("Invalid input: ")
-                                        << repr(S)
-                                        << "\nMust be an integer (0 <= n <= "
-                                        << sudokuSize[2] << ")!";
-                                }
+                        for (size_t i = 0u, j; i < sudokuSize[3]; ++i) {
+                            sudokuInSubStr = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
+                            try {
+                                if ((j = sToSize_t(sudokuInSubStr)) > sudokuSize[2])
+                                    throw sudokuInSubStr;
+                                sudoku << j;
+                            } catch (const string& S) {
+                                throw SystemExit("Invalid input: ")
+                                    << repr(S)
+                                    << "\nMust be an integer (0 <= n <= "
+                                    << sudokuSize[2] << ")!";
                             }
                         }
                         if (sudoku())
