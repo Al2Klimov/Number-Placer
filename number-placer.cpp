@@ -89,11 +89,7 @@ private:
     bool test(size_t);
     bool XAddress(size_t, unsigned char, size_t&);
 
-    void dealloc(void);
-    template<class T>
-    void dealloc(T*);
-    template<class T>
-    void dealloc(T**, size_t);
+    void dealloc();
 };
 
 size_t uIntDigits(size_t);
@@ -601,35 +597,46 @@ bool NumberPlacer::XAddress(size_t x, unsigned char a, size_t& b) {
     return true;
 }
 
-void NumberPlacer::dealloc(void) {
+void NumberPlacer::dealloc() {
+    class DeAlloc {
+    public:
+#define dealloc(T) \
+        static void deAlloc(T* p) {\
+            if (p != nullptr)\
+                delete[] p;\
+        }
+        dealloc(size_t)
+        dealloc(bool)
+#undef dealloc
+
+#define dealloc(T) \
+        static void deAlloc(T** p, size_t s) {\
+            if (p != nullptr) {\
+                for (size_t i = 0u; i < s; ++i)\
+                    deAlloc(p[i]);\
+                delete[] p;\
+            }\
+        }
+        dealloc(size_t)
+        dealloc(bool)
+#undef dealloc
+    private:
+        DeAlloc() = delete;
+    };
+
+#define dealloc DeAlloc::deAlloc
     dealloc(possibilities, B);
     dealloc(content);
-    {
-        unsigned char i, j;
-        for (i = 0u; i < 2u; ++i) {
-            dealloc(XAddressValid[i]);
-            dealloc(XPosition[i]);
-        }
-        for (i = 0u; i < 3u; ++i) {
-            for (j = 0u; j < 2u; ++j)
-                dealloc(address[i][j]);
-            dealloc(position[i], A);
-        }
+    unsigned char i, j;
+    for (i = 0u; i < 2u; ++i) {
+        dealloc(XAddressValid[i]);
+        dealloc(XPosition[i]);
     }
-}
-
-template<class T>
-void NumberPlacer::dealloc(T* p) {
-    if (p != nullptr)
-        delete[] p;
-}
-
-template<class T>
-void NumberPlacer::dealloc(T** p, size_t s) {
-    if (p != nullptr) {
-        for (size_t i = 0u; i < s; ++i)
-            dealloc(p[i]);
-        delete[] p;
+    for (i = 0u; i < 3u; ++i) {
+        for (j = 0u; j < 2u; ++j)
+            dealloc(address[i][j]);
+        dealloc(position[i], A);
+#undef dealloc
     }
 }
 // ~NumberPlacer
