@@ -604,12 +604,7 @@ void NumberPlacer::dealloc() {
         static void deAlloc(T* p) {\
             if (p != nullptr)\
                 delete[] p;\
-        }
-        dealloc(size_t)
-        dealloc(bool)
-#undef dealloc
-
-#define dealloc(T) \
+        }\
         static void deAlloc(T** p, size_t s) {\
             if (p != nullptr) {\
                 for (size_t i = 0u; i < s; ++i)\
