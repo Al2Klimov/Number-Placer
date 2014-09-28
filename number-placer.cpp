@@ -91,9 +91,9 @@ private:
 
     void dealloc(void);
     template<class T>
-    void dealloc(T);
+    void dealloc(T*);
     template<class T>
-    void dealloc(T, size_t);
+    void dealloc(T**, size_t);
 };
 
 size_t uIntDigits(size_t);
@@ -619,13 +619,13 @@ void NumberPlacer::dealloc(void) {
 }
 
 template<class T>
-void NumberPlacer::dealloc(T p) {
+void NumberPlacer::dealloc(T* p) {
     if (p != nullptr)
         delete[] p;
 }
 
 template<class T>
-void NumberPlacer::dealloc(T p, size_t s) {
+void NumberPlacer::dealloc(T** p, size_t s) {
     if (p != nullptr) {
         for (size_t i = 0u; i < s; ++i)
             dealloc(p[i]);
