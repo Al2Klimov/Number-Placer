@@ -105,9 +105,9 @@ int main(int argc, char **argv) {
                 << argv[0] << "' takes at most 3 command-line arguments ("
                 << (argc - 1) << " given)";
         try {
-            bool sudokuX = false;
-            string *args = new string[argc];
-            for (decltype(argc) i = 0; i < argc; ++i)
+            bool sudokuX (false);
+            string *args (new string[argc]);
+            for (decltype(argc) i (0); i < argc; ++i)
                 args[i] = argv[i];
             if (argc > 1) {
                 if (args[argc-1] == "X" || args[argc-1] == "x")
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
             size_t
                 sudokuSize[4],
                 sudokuStrSize[2];
-            for (signed char i = 0; i < 2; ++i) {
+            for (signed char i (0); i < 2; ++i) {
                 if (argc - (sudokuX ? 2 : 1) < i + 1)
                     sudokuSize[i] = i ? sudokuSize[0] : 3u;
                 else {
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
                     "Preparing... ";
             NumberPlacer sudoku (sudokuSize[0], sudokuSize[1], sudokuX);
             cerr << "done." << endl;
-            bool firstLine = true;
+            bool firstLine (true);
             string sudokuInStr,
                    sudokuInSubStr;
             size_t sudokuInStrLen;
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
                 sudokuInStrLen = sudokuInStr.length();
                 if (sudokuInStrLen) {
                     if (sudokuInStrLen == sudokuStrSize[1]) {
-                        for (size_t i = 0u, j; i < sudokuSize[3]; ++i) {
+                        for (size_t i (0u), j; i < sudokuSize[3]; ++i) {
                             sudokuInSubStr = sudokuInStr.substr(i * sudokuStrSize[0], sudokuStrSize[0]);
                             try {
                                 if ((j = sToSize_t(sudokuInSubStr)) > sudokuSize[2])
@@ -190,14 +190,14 @@ int main(int argc, char **argv) {
                             }
                         }
                         if (sudoku())
-                            for (size_t i = 0u, j, k; i < sudokuSize[3]; ++i) {
+                            for (size_t i (0u), j, k; i < sudokuSize[3]; ++i) {
                                 sudoku >> j;
                                 for (k = uIntDigits(j); k < sudokuStrSize[0]; ++k)
                                     cout << '0';
                                 cout << j;
                             }
                         else
-                            for (size_t i = 0u; i < sudokuStrSize[1]; ++i)
+                            for (size_t i (0u); i < sudokuStrSize[1]; ++i)
                                 cout << '0';
                         cout << endl;
                         if (cin.eof()) {
@@ -247,7 +247,7 @@ size_t sToSize_t(const string& s) {
 }
 
 string repr(const string& s) {
-    string r = "\"";
+    string r ("\"");
     char buf[3];
     for (const auto c : s)
         switch (c) {
@@ -280,7 +280,7 @@ string repr(const string& s) {
 }
 
 size_t uIntDigits(size_t n) {
-    size_t x = 0u;
+    size_t x (0u);
     do ++x;
     while (n /= 10u);
     return x;
@@ -339,8 +339,8 @@ NumberPlacer::NumberPlacer(size_t a, size_t b, bool x) {
             for (i = 0u; i < B; ++i)
                 possibilities[i] = new bool[A];
         }
-        for (unsigned char i = 0u; i < 3u; ++i) {
-            for (unsigned char j = 0u; j < 2u; ++j)
+        for (unsigned char i (0u); i < 3u; ++i) {
+            for (unsigned char j (0u); j < 2u; ++j)
                 address[i][j] = new size_t[B];
             position[i] = new size_t*[A];
             {
@@ -364,7 +364,7 @@ NumberPlacer::NumberPlacer(size_t a, size_t b, bool x) {
             }
         }
         if (x)
-            for (unsigned char i = 0u; i < 2u; ++i) {
+            for (unsigned char i (0u); i < 2u; ++i) {
                 XPosition[i] = new size_t[A];
                 XAddressValid[i] = new bool[B];
                 {
@@ -475,9 +475,9 @@ bool NumberPlacer::operator () (void) {
         } while (success);
     }
 
-    for (size_t i = 0u; i < B; ++i)
+    for (size_t i (0u); i < B; ++i)
         content[i] = 0u;
-    for (size_t n = 0u;;) {
+    for (size_t n (0u);;) {
         while (++content[n] <= A)
             if (Possibility(n, content[n]) && test(n)) {
                 if (n < B - 1u)
@@ -498,13 +498,13 @@ bool NumberPlacer::operator () (void) {
 #undef SudokuDone
 
 bool NumberPlacer::modNumber(size_t n, size_t x) {
-    bool b = possibilities[n][--x];
+    bool b (possibilities[n][--x]);
     if (b) {
         possibilities[n][x] = false;
-        auto i = count(n);
+        auto i (count(n));
         if (i) {
             if (i == 1u) {
-                size_t j = 1u;
+                size_t j (1u);
                 while (!Possibility(n, j))
                     ++j;
                 content[n] = j;
@@ -523,13 +523,13 @@ NumberPlacer& NumberPlacer::operator >> (size_t& x) {
 
 void NumberPlacer::number(size_t n, size_t x) {
     content[n] = x;
-    for (size_t i = 0u; i < A; ++i)
+    for (size_t i (0u); i < A; ++i)
         possibilities[n][i] = x ? (i == x - 1u) : true;
 }
 
 size_t NumberPlacer::count(void) {
-    size_t x = 0u;
-    for (size_t i = 0u; i < B; ++i)
+    size_t x (0u);
+    for (size_t i (0u); i < B; ++i)
         if (content[i])
             ++x;
     return x;
@@ -556,8 +556,8 @@ bool NumberPlacer::check() {
 }
 
 unsigned char NumberPlacer::count(size_t n) {
-    unsigned char x = 0u;
-    for (size_t i = 0u; i < A; ++i)
+    unsigned char x (0u);
+    for (size_t i (0u); i < A; ++i)
         if (possibilities[n][i] && ++x > 1u)
             break;
     return x;
@@ -605,7 +605,7 @@ void NumberPlacer::dealloc() {
         }\
         static void deAlloc(T** p, size_t s) {\
             if (p != nullptr) {\
-                for (size_t i = 0u; i < s; ++i)\
+                for (size_t i (0u); i < s; ++i)\
                     deAlloc(p[i]);\
                 delete[] p;\
             }\
