@@ -207,9 +207,10 @@ int main(int argc, char **argv) {
                         }
                         if (firstLine)
                             firstLine = false;
-                    } else throw SystemExit("Invalid input!\nEach line must be ")
-                        << sudokuStrSize[1]
-                        << " characters long!";
+                    } else
+                        throw SystemExit("Invalid input!\nEach line must be ")
+                            << sudokuStrSize[1]
+                            << " characters long!";
                 } else {
                     if (cin.eof()) {
                         cerr << (firstLine ? "EOF @ first line -- nothing to do." : "End of file.") << endl;
@@ -355,8 +356,9 @@ NumberPlacer::NumberPlacer(size_t a, size_t b, bool x) {
                                               + k / a * A
                                               + j % b * a
                                               + k % a;
-                        else position[i][j][k] = i ? (k * A + j)
-                                                   : (j * A + k);
+                        else
+                            position[i][j][k] = i ? (k * A + j)
+                                                  : (j * A + k);
                         address[i][0][ position[i][j][k] ] = j;
                         address[i][1][ position[i][j][k] ] = k;
                     }
@@ -482,11 +484,13 @@ bool NumberPlacer::operator () (void) {
             if (Possibility(n, content[n]) && test(n)) {
                 if (n < B - 1u)
                     ++n;
-                else goto SudokuInterrupt;
+                else
+                    goto SudokuInterrupt;
             }
         if (n)
             content[n--] = 0u;
-        else return false;
+        else
+            return false;
     }
 
     SudokuInterrupt:
@@ -509,7 +513,8 @@ bool NumberPlacer::modNumber(size_t n, size_t x) {
                     ++j;
                 content[n] = j;
             }
-        } else fail = true;
+        } else
+            fail = true;
     }
     return b;
 }
