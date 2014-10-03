@@ -211,15 +211,13 @@ int main(int argc, char **argv) {
                         throw SystemExit("Invalid input!\nEach line must be ")
                             << sudokuStrSize[1]
                             << " characters long!";
+                } else if (cin.eof()) {
+                    cerr << (firstLine ? "EOF @ first line -- nothing to do." : "End of file.") << endl;
+                    break;
                 } else {
-                    if (cin.eof()) {
-                        cerr << (firstLine ? "EOF @ first line -- nothing to do." : "End of file.") << endl;
-                        break;
-                    } else {
-                        cerr << "Warning: Ignoring blank line" << endl;
-                        if (firstLine)
-                            firstLine = false;
-                    }
+                    cerr << "Warning: Ignoring blank line" << endl;
+                    if (firstLine)
+                        firstLine = false;
                 }
             }
         } catch (const bad_alloc& e) {
