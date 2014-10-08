@@ -35,6 +35,9 @@ using std::ostringstream;
 #include <new>
 using std::bad_alloc;
 
+#include <limits>
+using std::numeric_limits;
+
 #include <cstdio>
 // sprintf
 
@@ -136,7 +139,7 @@ int main(int argc, char **argv) {
                         throw invalidCmdArg(i + 1)
 #undef invalidCmdArg
                             << "Must be an integer (2 <= n <= "
-                            << size_t(-1)
+                            << numeric_limits<size_t>::max()
                             << (
                                 (!sudokuX && argc - 1 == i + 1)
                                 ? "), \"X\" or \"x\"!"
