@@ -1,0 +1,13 @@
+[package]
+name = "number-placer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Alexander A. Klimov"]
+description = "Al Klimov's Number Placer - Sudoku solver"
+license = "GPL-3.0-or-later"
+
+[[bin]]
+name = "number-placer"
+path = "src/main.rs"
+
+[dependencies]
